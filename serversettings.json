@@ -1,0 +1,10 @@
+{
+	"http_port": 8080,
+	"https_port": 8443,
+	"db_connection": {
+		"host": "localhost",
+		"user": "cis2106",
+		"password": "JQ1mK3khr3hlaLMs",
+		"database": "cis2106"
+	}
+}
