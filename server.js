@@ -19,7 +19,7 @@ app.use(expressSession({secret: "ormskirknewspaper", resave: true, saveUninitial
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.use(new Strategy({usernameField: 'email', passwordField: 'password'}, function(username, password, done) {
+passport.use(new Strategy({usernameField: "email", passwordField: "password"}, function(username, password, done) {
 	users.checkLogin(username, password).then(function(user) { // If login passed
 		done(null, user);
 
@@ -38,32 +38,7 @@ passport.deserializeUser((id, done) => users.getUserById(id).then(user => done(n
 app.use(express.static(__dirname + "/app/public"));
 
 // Routing
-app.get('/', (req, res) => {
-	if (req.isAuthenticated())
-		res.sendFile(__dirname + "/app/html/app.html"); // This will be changed to res.render eventually
-	else
-		res.sendFile(__dirname + "/app/html/login.html");
-});
-
-app.post('/login', (req, res, next) => {
-	passport.authenticate('local', (err, user, info) => {
-		if (err) next(err);
-		if (user)
-			req.login(user, err => {
-				if (err) next(err);
-				res.json({success: true});
-			});
-
-		else
-			res.json({success: false});
-
-	})(req, res, next);
-});
-
-app.get('/logout', (req, res) => {
-	req.logout();
-	res.redirect("/");
-});
+require('./custom_modules/routing')(app);
 
 // Start servers
 httpServer.listen(serversettings.http_port, _ => console.log("HTTP server listening on " + serversettings.http_port));
