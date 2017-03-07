@@ -23,7 +23,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `customers` (
   `id` int(11) UNSIGNED NOT NULL,
   `email` varchar(64) NOT NULL,
-  `password` varchar(64) NOT NULL,
+  `password` varchar(60) NOT NULL,
   `name` varchar(32) NOT NULL,
   `address1` varchar(32) NOT NULL,
   `address2` varchar(32) NOT NULL,
