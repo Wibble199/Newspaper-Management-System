@@ -11,11 +11,21 @@ module.exports = function(app) {
 
 	// Update the users password
 	app.post("/password", requireAuth((req, res) => {
-		users.updatePassword(req.user.id, req.body.password).then(() => {
-			res.json({success: true});
-		}, err => {
-			res.json({success: false, err});
-		});
+		users.updatePassword(req.user.id, req.body.password).then(
+			() => res.json({success: true}),
+			err => res.json({success: false, err})
+		);
+	}));
+
+	// ----------------------------- //
+	// USER SUBSCRIPTION END POINTS //
+	// --------------------------- //
+	// Fetch all subscriptions
+	app.get("/subscriptions", requireAuth((req, res) => {
+		users.getSubscriptions(req.user.id).then(
+			results => res.json({success: true, results}),
+			err => res.json({success: false, err})
+		);
 	}));
 };
 

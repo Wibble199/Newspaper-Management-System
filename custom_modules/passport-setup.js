@@ -23,7 +23,7 @@ module.exports = function(app) {
 	}));
 
 	passport.serializeUser((user, done) => done(null, user.id));
-	passport.deserializeUser((id, done) => users.getUserById(id).then(user => done(null, user), err => done(err, null)));
+	passport.deserializeUser((id, done) => users.getById(id).then(user => done(null, user), err => done(err, null)));
 
 	// Login routing
 	app.post('/login', (req, res, next) => {
