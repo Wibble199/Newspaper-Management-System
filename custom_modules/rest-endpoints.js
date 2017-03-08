@@ -32,3 +32,16 @@ function requireAuth(next) {
 			res.status(401).send("Unauthorized");
 	};
 }
+
+/**
+ * Function that checks a request to ensure that it is authenticated with an admin account and if so calls the `next` function with (req, res) objects from the route. If not authenticated or not admin account then uses the response object and sends back a 401 error.
+ * @param {function} next The function to be called if request is authenticated with admin account
+ */
+function requireAdmin(next) {
+	return function(req, res) {
+		if (req.isAuthenticated() && req.user.isAdmin)
+			next(req, res);
+		else
+			res.status(401).send("Unauthorized");
+	}
+}

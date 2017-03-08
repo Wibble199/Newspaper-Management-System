@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.6.0
+-- version 4.5.4.1deb2ubuntu2
 -- http://www.phpmyadmin.net
 --
--- Host: 127.0.0.1:3306
--- Generation Time: Mar 03, 2017 at 01:39 AM
--- Server version: 5.6.29
--- PHP Version: 7.0.5
+-- Host: localhost
+-- Generation Time: Mar 08, 2017 at 12:39 PM
+-- Server version: 5.7.17-0ubuntu0.16.04.1
+-- PHP Version: 7.0.15-0ubuntu0.16.04.2
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -24,14 +24,15 @@ CREATE TABLE `customers` (
   `id` int(11) UNSIGNED NOT NULL,
   `email` varchar(64) NOT NULL,
   `password` varchar(60) NOT NULL,
-  `name` varchar(32) NOT NULL,
-  `address1` varchar(32) NOT NULL,
-  `address2` varchar(32) NOT NULL,
-  `address3` varchar(32) DEFAULT NULL,
-  `address4` varchar(32) DEFAULT NULL,
+  `name` varchar(64) NOT NULL,
+  `address1` varchar(64) NOT NULL,
+  `address2` varchar(64) NOT NULL,
+  `address3` varchar(64) NOT NULL,
+  `address4` varchar(64) NOT NULL,
   `postcode` varchar(8) NOT NULL,
-  `contactnum` varchar(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `contactnum` varchar(11) NOT NULL,
+  `isAdmin` tinyint(1) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -90,7 +91,7 @@ ALTER TABLE `subscriptions`
 -- AUTO_INCREMENT for table `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 --
 -- AUTO_INCREMENT for table `publications`
 --

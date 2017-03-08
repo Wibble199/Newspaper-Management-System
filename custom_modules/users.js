@@ -5,7 +5,7 @@ const db = require('./db');
  * Get a single user based on their ID (primary key).
  * Returns a Promise object that rejects on server error or if no user was found and resolves with the user object (minus password hash) on success.
  * @param {number} id ID of the user to find
- * @return {Promise}
+ * @returns {Promise}
  */
 function getUserById(id) {
 	return new Promise((resolve, reject) => {
@@ -24,6 +24,7 @@ function getUserById(id) {
  * Returns a Promise object that rejects on error or resolve (with no value) on success.
  * @param {number} id The ID of the user whose password to update
  * @param {string} password UNENCRYPTED password to be used
+ * @returns {Promise}
  */
 function updatePassword(id, password) {
 	if (!password) return Promise.reject("Invalid password");
