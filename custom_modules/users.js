@@ -77,13 +77,41 @@ module.exports = {
 	// ------------------- //
 	
 	/**
-	 * Fetch the subscriptions for a particular user.
+	 * Fetch the subscriptions for a all customers.
+	 * @returns {Promise}
+	 */
+	getSubscriptions: function() {
+		return new Promise(function(resolve, reject) {
+			db.query("SELECT s.*, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id", (err, results) => {
+				if (err) reject(err);
+				else resolve(results);
+			});
+		});
+	},
+
+	/**
+	 * Fetch a specific subscription
+	 * @param {number} id The ID of the subscription to fetch
+	 * @returns {Promise}
+	 */
+	getSubscription: function(id) {
+		return new Promise(function(resolve, reject) {
+			db.query("SELECT s.*, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.id = ?", [id], (err, results) => {
+				if (err) reject(err);
+				else if (results.length == 1) resolve(results[0]);
+				else reject(Error("No subscription found with that ID"));
+			});
+		});
+	},
+
+	/**
+	 * Fetch the subscriptions for a particular customer.
 	 * @param {number} id The ID of the user to fetch the subscriptions for
 	 * @returns {Promise}
 	 */
-	getSubscriptions: function(id) {
+	getSubscriptionsForUser: function(id) {
 		return new Promise(function(resolve, reject) {
-			db.query("SELECT subscriptions.*, publications.name FROM subscriptions INNER JOIN publications ON subscriptions.publication_id = publications.id WHERE customer_id = ?;", [id], (err, results) => {
+			db.query("SELECT s.*, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id], (err, results) => {
 				if (err) reject(err);
 				else resolve(results);
 			});
@@ -94,6 +122,7 @@ module.exports = {
 	 * Attempts to add a subscription to the system.
 	 * Returns Promise that will reject on failure (ValidationError [If data wrong] or Error [If SQL failed]) or resolve with the newly inserted ID on success.
 	 * @param {object} data The additional data for the subscription (customer_id, publication_id, start_date, end_date, delivery_days)
+	 * @returns {Promise}
 	 */
 	addSubscription: function(data) {
 		// Validate all the new fields
@@ -127,9 +156,10 @@ module.exports = {
 
 	/**
 	 * Attempts to update an existing subscription in the database.
-	 * Returns Promise that will reject on failure (ValidationError [If data wrong] or Error [If SQL failed]) or resolve with the newly inserted ID on success.
+	 * Returns Promise that will reject on failure (ValidationError [If data wrong] or Error [If SQL failed]) or resolve with no parameter on success.
 	 * @param {number} id The ID of the subscription to update
 	 * @param {object} data The extra data for the subscription (customer_id, publication_id, start_date, end_date, delivery_days)
+	 * @returns {Promise}
 	 */
 	updateSubscription: function(id, data) {
 		// Validate all the new fields
@@ -156,7 +186,8 @@ module.exports = {
 
 			db.query("UPDATE subscriptions SET ? WHERE id = ?", [queryParams, id], (err, results) => {
 				if (err) reject(err);
-				else resolve();
+				else if (results.affectedRows == 1) resolve();
+				else reject(new ValidationError("Failed to update row with that ID"));
 			});
 		}));
 	},
@@ -164,11 +195,16 @@ module.exports = {
 	/**
 	 * Attempts to delete an existing subscription in the database
 	 * Returns a Promise that will reject on failure or resolve with no value on success.
-	 * @param {number} id The ID of the subscription to 
+	 * @param {number} id The ID of the subscription to delete
+	 * @returns {Promise}
 	 */
-	deleteSubscritpion: function(id) {
+	deleteSubscription: function(id) {
 		return new Promise(function(resolve, reject) {
-
+			db.query("DELETE FROM subscriptions WHERE id = ?", [id], (err, results) => {
+				if (err) reject(err);
+				else if (results.affectedRows == 1) resolve();
+				else reject(new ValidationError("Failed to delete row with given ID"))
+			});
 		});
 	},
 
