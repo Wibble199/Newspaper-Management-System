@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Mar 08, 2017 at 12:39 PM
+-- Generation Time: Mar 08, 2017 at 01:29 PM
 -- Server version: 5.7.17-0ubuntu0.16.04.1
 -- PHP Version: 7.0.15-0ubuntu0.16.04.2
 
@@ -59,6 +59,19 @@ CREATE TABLE `subscriptions` (
   `enddate` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `temporary_cancellations`
+--
+
+CREATE TABLE `temporary_cancellations` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `customer_id` int(10) UNSIGNED NOT NULL,
+  `cancellation_start` date NOT NULL,
+  `cancellation_end` date NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 --
 -- Indexes for dumped tables
 --
@@ -84,6 +97,13 @@ ALTER TABLE `subscriptions`
   ADD KEY `publication_id` (`publication_id`);
 
 --
+-- Indexes for table `temporary_cancellations`
+--
+ALTER TABLE `temporary_cancellations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `subscription_id` (`customer_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -96,12 +116,17 @@ ALTER TABLE `customers`
 -- AUTO_INCREMENT for table `publications`
 --
 ALTER TABLE `publications`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 --
 -- AUTO_INCREMENT for table `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+--
+-- AUTO_INCREMENT for table `temporary_cancellations`
+--
+ALTER TABLE `temporary_cancellations`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 --
 -- Constraints for dumped tables
 --
@@ -110,5 +135,11 @@ ALTER TABLE `subscriptions`
 -- Constraints for table `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  ADD CONSTRAINT `fk_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_publication` FOREIGN KEY (`publication_id`) REFERENCES `publications` (`id`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_subscriptions_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_subscriptions_publication` FOREIGN KEY (`publication_id`) REFERENCES `publications` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `temporary_cancellations`
+--
+ALTER TABLE `temporary_cancellations`
+  ADD CONSTRAINT `fk_cancellations_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;

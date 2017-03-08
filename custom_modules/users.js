@@ -87,5 +87,19 @@ module.exports = {
 				else resolve(results);
 			});
 		});
+	},
+
+	/**
+	 * Fetch the cancellations for a particular user.
+	 * @param {number} id The ID of the user to fetch the subscriptions for
+	 * @returns {Promise}
+	 */
+	getCancellations: function(id) {
+		return new Promise(function(resolve, reject) {
+			db.query("SELECT * FROM temporary_cancellations WHERE customer_id = ?", [id], (err, results) => {
+				if (err) reject(err);
+				else resolve(results);
+			});
+		});
 	}
 };

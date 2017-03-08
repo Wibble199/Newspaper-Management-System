@@ -27,6 +27,14 @@ module.exports = function(app) {
 			err => res.json({success: false, err})
 		);
 	}));
+
+	// Fetch all cancellations
+	app.get("/cancellations", requireAuth((req, res) => {
+		users.getCancellations(req.user.id).then(
+			results => res.json({success: true, results}),
+			err => res.json({success: false, err})
+		);
+	}));
 };
 
 /**
