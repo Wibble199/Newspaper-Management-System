@@ -22,8 +22,12 @@ module.exports = function(app) {
 		});
 	}));
 
+	// User serialization
 	passport.serializeUser((user, done) => done(null, user.id));
-	passport.deserializeUser((id, done) => db.users.getById(id).then(user => done(null, user), err => done(err, null)));
+	passport.deserializeUser((id, done) => db.users.getById(id).then(
+		user => done(null, user),
+		err => done(err, null)
+	));
 
 	// Login routing
 	app.post('/login', (req, res, next) => {
