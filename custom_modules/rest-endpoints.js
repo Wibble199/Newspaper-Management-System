@@ -37,6 +37,14 @@ module.exports = function(app) {
 		)
 	}));
 
+	app.put("/subscriptions/:id", requireAuth((req, res) => {
+		req.body.customer_id = req.user.id;
+		users.updateSubscription(req.params.id, req.body).then(
+			() => res.json({success: true}),
+			err => res.json({success: false, err})
+		);
+	}));
+
 	// --------------------------- //
 	// USER SUSPENSION END POINTS //
 	// ------------------------- //

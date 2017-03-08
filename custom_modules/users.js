@@ -96,6 +96,7 @@ module.exports = {
 	 * @param {object} data The additional data for the subscription (customer_id, publication_id, start_date, end_date, delivery_days)
 	 */
 	addSubscription: function(data) {
+		// Validate all the new fields
 		var err = validator.validateMap({
 			customer_id: validator.NUMBERS_ONLY,
 			publication_id: validator.NUMBERS_ONLY,
@@ -107,11 +108,11 @@ module.exports = {
 		if (err) return Promise.reject(new ValidationError(err));
 
 		return new Promise(function(resolve, reject) { // First check if this customer is already subscribed to this publication during these dates
-			console.log(db.query("SELECT id FROM subscriptions WHERE customer_id = ? AND publication_id = ? AND start_date < ? AND end_date > ?", [data.customer_id, data.publication_id, data.end_date, data.start_date], (err, results) => {
+			db.query("SELECT id FROM subscriptions WHERE customer_id = ? AND publication_id = ? AND start_date < ? AND end_date > ?", [data.customer_id, data.publication_id, data.end_date, data.start_date], (err, results) => {
 				if (err) reject(err);
 				else if (results.length == 0) resolve(); // If no overlap was found - go ahead to the next query
 				else reject(new ValidationError("Overlapping dates with existing subscription")); // If an overlapping identical publication was found reject
-			}).sql);
+			});
 
 		}).then(new Promise(function(resolve, reject) {
 			// Create an object with the data to go into the query
@@ -131,9 +132,33 @@ module.exports = {
 	 * @param {object} data The extra data for the subscription (customer_id, publication_id, start_date, end_date, delivery_days)
 	 */
 	updateSubscription: function(id, data) {
-		return new Promise(function(resolve, reject) {
+		// Validate all the new fields
+		var err = validator.validateMap({
+			customer_id: validator.NUMBERS_ONLY,
+			publication_id: validator.NUMBERS_ONLY,
+			start_date: validator.DATE_YYYY_MM_DD,
+			end_date: [validator.OPTIONAL, validator.DATE_YYYY_MM_DD],
+			delivery_days: validator.NUMBERS_ONLY
+		}, data);
 
-		});
+		if (err) return Promise.reject(new ValidationError(err));
+
+		return new Promise(function(resolve, reject) { // First check if this customer is already subscribed to this publication during these dates (and that the overlapping one is not the one being edited)
+			db.query("SELECT id FROM subscriptions WHERE id != ? AND customer_id = ? AND publication_id = ? AND start_date < ? AND end_date > ?", [id, data.customer_id, data.publication_id, data.end_date, data.start_date], (err, results) => {
+				if (err) reject(err);
+				else if (results.length == 0) resolve(); // If no overlap was found - go ahead to the next query
+				else reject(new ValidationError("Overlapping dates with existing subscription")); // If an overlapping identical publication was found reject
+			});
+
+		}).then(new Promise(function(resolve, reject) {
+			// Create an object with the data to go into the query
+			var queryParams = reducedCopy(data, ["customer_id", "publication_id", "start_date", "end_date", "delivery_days"]); // Will ignore any other fields
+
+			db.query("UPDATE subscriptions SET ? WHERE id = ?", [queryParams, id], (err, results) => {
+				if (err) reject(err);
+				else resolve();
+			});
+		}));
 	},
 
 	/**
