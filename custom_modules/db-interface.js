@@ -216,11 +216,38 @@ module.exports = {
 	// ----------------- //
 	suspensions: {
 		/**
-		 * Fetch the suspensions for a particular user.
-		 * @param {number} id The ID of the user to fetch the subscriptions for
+		 * Fetch all suspensions. Returns a promise that resolves with results or rejects with error.
 		 * @returns {Promise}
 		 */
-		get: function(id) {
+		get: function() {
+			return new Promise(function(resolve, reject) {
+				db.query("SELECT * FROM suspensions", (err, results) => {
+					if (err) reject(err);
+					else resolve(results);
+				});
+			});
+		},
+
+		/**
+		 * Fetch the suspensions for a particular user. Returns a promise that resolves with results or rejects with error.
+		 * @param {number} id The ID of the suspension to fetch
+		 * @returns {Promise}
+		 */
+		getById: function(id) {
+			return new Promise(function(resolve, reject) {
+				db.query("SELECT * FROM suspensions WHERE id = ?", [id], (err, results) => {
+					if (err) reject(err);
+					else resolve(results);
+				});
+			});
+		},
+
+		/**
+		 * Fetch the suspensions for a particular user. Returns a promise that resolves with results or rejects with error.
+		 * @param {number} id The ID of the user to fetch the suspensions for
+		 * @returns {Promise}
+		 */
+		getByUserId: function(id) {
 			return new Promise(function(resolve, reject) {
 				db.query("SELECT * FROM suspensions WHERE customer_id = ?", [id], (err, results) => {
 					if (err) reject(err);
