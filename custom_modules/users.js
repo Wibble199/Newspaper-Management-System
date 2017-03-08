@@ -8,13 +8,33 @@ const db = require('./db');
  * @return {Promise}
  */
 function getUserById(id) {
-	return new Promise(function(resolve, reject) {
+	return new Promise((resolve, reject) => {
 		db.query("SELECT * FROM customers WHERE customers.id = ?", [id], (err, results) => {
 			if (err) reject(err);
 			else if (results.length == 1) {
 				delete results[0].password; // Delete the password property
 				resolve(results[0]); // Return the user
 			} else reject(Error("No user found with id " + id));
+		});
+	});
+}
+
+/**
+ * Encrypts and updates the password for a specific user in the database.
+ * Returns a Promise object that rejects on error or resolve (with no value) on success.
+ * @param {number} id The ID of the user whose password to update
+ * @param {string} password UNENCRYPTED password to be used
+ */
+function updatePassword(id, password) {
+	if (!password) return Promise.reject("Invalid password");
+
+	return new Promise((resolve, reject) => {
+		password = bcrypt.hashSync(password, 10);
+
+		db.query("UPDATE customers SET password = ? WHERE customers.id = ?", [password, id], (err, results) => {
+			if (err) reject(err);
+			else if (results.affectedRows == 1) resolve();
+			else reject(Error("No user found with id " + id));
 		});
 	});
 }
@@ -27,7 +47,7 @@ function getUserById(id) {
  * @returns {Promise}
  */
 function checkLogin(email, pwd) {
-	return new Promise(function(resolve, reject) {
+	return new Promise((resolve, reject) => {
 		db.query("SELECT * FROM customers WHERE LOWER(customers.email) = ?", [email.toLowerCase()], (err, results) => { // Find the user from email
 			if (err) // Server error
 				reject(err);
@@ -49,5 +69,6 @@ function checkLogin(email, pwd) {
 // Export
 module.exports = {
 	getUserById,
+	updatePassword,
 	checkLogin
 };
