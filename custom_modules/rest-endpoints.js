@@ -1,4 +1,4 @@
-const users = require('./users');
+const db = require('./db-interface');
 
 module.exports = function(app) {
 	// ------------------------ //
@@ -11,7 +11,7 @@ module.exports = function(app) {
 
 	// Update the users password
 	app.post("/password", requireAuth((req, res) => {
-		users.updatePassword(req.user.id, req.body.password).then(
+		db.users.updatePassword(req.user.id, req.body.password).then(
 			() => res.json({success: true}),
 			err => res.json({success: false, err})
 		);
@@ -22,7 +22,7 @@ module.exports = function(app) {
 	// --------------------------- //
 	// Fetch all subscriptions
 	app.get("/subscriptions", requireAuth((req, res) => {
-		users.getSubscriptionsForUser(req.user.id).then(
+		db.subscriptions.getByUserId(req.user.id).then(
 			results => res.json({success: true, results}),
 			err => res.json({success: false, err})
 		);
@@ -31,7 +31,7 @@ module.exports = function(app) {
 	// Add new subscription
 	app.post("/subscriptions", requireAuth((req, res) => {
 		req.body.customer_id = req.user.id; // Add the user ID to the data for the subscription
-		users.addSubscription(req.body).then(
+		db.subscriptions.insert(req.body).then(
 			newId => res.json({success: true, id: newId}),
 			err => res.json({success: false, err})
 		)
@@ -40,11 +40,11 @@ module.exports = function(app) {
 	// Update existing subscription
 	app.put("/subscriptions/:id", requireAuth((req, res) => {
 		req.body.customer_id = req.user.id; // Add the user ID to the data for the subscription
-		(req.user.is_admin ? Promise.resolve() : users.getSubscription(req.params.id).then(sub => { // Ensure the customer who is attempting to update this row is the customer that created it (or an admin)
+		(req.user.is_admin ? Promise.resolve() : db.subscriptions.getById(req.params.id).then(sub => { // Ensure the customer who is attempting to update this row is the customer that created it (or an admin)
 			if (sub.customer_id != req.user.id)
 				throw "Invalid user ID";
 		})).then(
-			() => users.updateSubscription(req.params.id, req.body)
+			() => db.subscriptions.update(req.params.id, req.body)
 		).then(
 			() => res.json({success: true}),
 			err => res.json({success: false, err})
@@ -53,11 +53,11 @@ module.exports = function(app) {
 
 	// Delete existing subscription
 	app.delete("/subscriptions/:id", requireAuth((req, res) => {
-		(req.user.is_admin ? Promise.resolve() : users.getSubscription(req.params.id).then(sub => { // Ensure the customer who is attempting to delete this row is the customer that created it (or an admin)
+		(req.user.is_admin ? Promise.resolve() : db.subscriptions.getById(req.params.id).then(sub => { // Ensure the customer who is attempting to delete this row is the customer that created it (or an admin)
 			if (sub.customer_id != req.user.id)
 				throw "Invalid user ID";
 		})).then(
-			() => users.deleteSubscription(req.params.id)
+			() => db.subscriptions.delete(req.params.id)
 		).then(
 			() => res.json({success: true}),
 			err => res.json({success: false, err})
@@ -69,7 +69,7 @@ module.exports = function(app) {
 	// ------------------------- //
 	// Fetch all suspensions
 	app.get("/suspensions", requireAuth((req, res) => {
-		users.getCancellations(req.user.id).then(
+		db.getCancellations(req.user.id).then(
 			results => res.json({success: true, results}),
 			err => res.json({success: false, err})
 		);
