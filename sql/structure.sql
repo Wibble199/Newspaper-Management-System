@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.5.4.1deb2ubuntu2
+-- version 4.6.0
 -- http://www.phpmyadmin.net
 --
--- Host: localhost
--- Generation Time: Mar 08, 2017 at 01:29 PM
--- Server version: 5.7.17-0ubuntu0.16.04.1
--- PHP Version: 7.0.15-0ubuntu0.16.04.2
+-- Host: 127.0.0.1:3306
+-- Generation Time: Mar 08, 2017 at 09:46 PM
+-- Server version: 5.6.29
+-- PHP Version: 7.0.5
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -30,8 +30,8 @@ CREATE TABLE `customers` (
   `address3` varchar(64) NOT NULL,
   `address4` varchar(64) NOT NULL,
   `postcode` varchar(8) NOT NULL,
-  `contactnum` varchar(11) NOT NULL,
-  `isAdmin` tinyint(1) NOT NULL DEFAULT '0'
+  `contact_num` varchar(11) NOT NULL,
+  `is_admin` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -55,17 +55,18 @@ CREATE TABLE `subscriptions` (
   `id` int(10) UNSIGNED NOT NULL,
   `customer_id` int(10) UNSIGNED NOT NULL,
   `publication_id` int(10) UNSIGNED NOT NULL,
-  `startdate` date NOT NULL,
-  `enddate` date DEFAULT NULL
+  `start_date` date NOT NULL,
+  `end_date` date DEFAULT NULL,
+  `delivery_days` tinyint(3) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `temporary_cancellations`
+-- Table structure for table `suspensions`
 --
 
-CREATE TABLE `temporary_cancellations` (
+CREATE TABLE `suspensions` (
   `id` int(10) UNSIGNED NOT NULL,
   `customer_id` int(10) UNSIGNED NOT NULL,
   `cancellation_start` date NOT NULL,
@@ -97,9 +98,9 @@ ALTER TABLE `subscriptions`
   ADD KEY `publication_id` (`publication_id`);
 
 --
--- Indexes for table `temporary_cancellations`
+-- Indexes for table `suspensions`
 --
-ALTER TABLE `temporary_cancellations`
+ALTER TABLE `suspensions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `subscription_id` (`customer_id`);
 
@@ -111,22 +112,22 @@ ALTER TABLE `temporary_cancellations`
 -- AUTO_INCREMENT for table `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `publications`
 --
 ALTER TABLE `publications`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
--- AUTO_INCREMENT for table `temporary_cancellations`
+-- AUTO_INCREMENT for table `suspensions`
 --
-ALTER TABLE `temporary_cancellations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+ALTER TABLE `suspensions`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- Constraints for dumped tables
 --
@@ -139,7 +140,7 @@ ALTER TABLE `subscriptions`
   ADD CONSTRAINT `fk_subscriptions_publication` FOREIGN KEY (`publication_id`) REFERENCES `publications` (`id`) ON UPDATE CASCADE;
 
 --
--- Constraints for table `temporary_cancellations`
+-- Constraints for table `suspensions`
 --
-ALTER TABLE `temporary_cancellations`
+ALTER TABLE `suspensions`
   ADD CONSTRAINT `fk_cancellations_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;

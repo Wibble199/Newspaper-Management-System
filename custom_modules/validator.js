@@ -3,7 +3,7 @@ module.exports = validator = {
 	// Constants //
 	// -------- //
 	/** Indicates an optional parameter */
-	OPTIONAL: {test: "<<opt>>", message: "Optional"},
+	OPTIONAL: {test: "<<opt>>", message: "Required"},
 	/** Indicates only letters can be in the string */
 	LETTERS_ONLY: {test: /^[A-Za-z]+$/, message: "Letters only"},
 	/** Indicates only numbers can be in the string */

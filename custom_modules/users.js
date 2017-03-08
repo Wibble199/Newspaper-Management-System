@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const db = require('./db');
+const validator = require('./validator');
 
 module.exports = {
 	// ----------------------- //
@@ -90,16 +91,92 @@ module.exports = {
 	},
 
 	/**
-	 * Fetch the cancellations for a particular user.
+	 * Attempts to add a subscription to the system.
+	 * Returns Promise that will reject on failure (ValidationError [If data wrong] or Error [If SQL failed]) or resolve with the newly inserted ID on success.
+	 * @param {object} data The additional data for the subscription (customer_id, publication_id, start_date, end_date, delivery_days)
+	 */
+	addSubscription: function(data) {
+		var err = validator.validateMap({
+			customer_id: validator.NUMBERS_ONLY,
+			publication_id: validator.NUMBERS_ONLY,
+			start_date: validator.DATE_YYYY_MM_DD,
+			end_date: [validator.OPTIONAL, validator.DATE_YYYY_MM_DD],
+			delivery_days: validator.NUMBERS_ONLY
+		}, data);
+
+		if (err) return Promise.reject(new ValidationError(err));
+
+		return new Promise(function(resolve, reject) { // First check if this customer is already subscribed to this publication during these dates
+			console.log(db.query("SELECT id FROM subscriptions WHERE customer_id = ? AND publication_id = ? AND start_date < ? AND end_date > ?", [data.customer_id, data.publication_id, data.end_date, data.start_date], (err, results) => {
+				if (err) reject(err);
+				else if (results.length == 0) resolve(); // If no overlap was found - go ahead to the next query
+				else reject(new ValidationError("Overlapping dates with existing subscription")); // If an overlapping identical publication was found reject
+			}).sql);
+
+		}).then(new Promise(function(resolve, reject) {
+			// Create an object with the data to go into the query
+			var queryParams = reducedCopy(data, ["customer_id", "publication_id", "start_date", "end_date", "delivery_days"]); // Will ignore any other fields
+
+			db.query("INSERT INTO subscriptions SET ?", queryParams, (err, results) => {
+				if (err) reject(err);
+				else resolve(results.insertId);
+			});
+		}));
+	},
+
+	/**
+	 * Attempts to update an existing subscription in the database.
+	 * Returns Promise that will reject on failure (ValidationError [If data wrong] or Error [If SQL failed]) or resolve with the newly inserted ID on success.
+	 * @param {number} id The ID of the subscription to update
+	 * @param {object} data The extra data for the subscription (customer_id, publication_id, start_date, end_date, delivery_days)
+	 */
+	updateSubscription: function(id, data) {
+		return new Promise(function(resolve, reject) {
+
+		});
+	},
+
+	/**
+	 * Attempts to delete an existing subscription in the database
+	 * Returns a Promise that will reject on failure or resolve with no value on success.
+	 * @param {number} id The ID of the subscription to 
+	 */
+	deleteSubscritpion: function(id) {
+		return new Promise(function(resolve, reject) {
+
+		});
+	},
+
+	/**
+	 * Fetch the suspensions for a particular user.
 	 * @param {number} id The ID of the user to fetch the subscriptions for
 	 * @returns {Promise}
 	 */
-	getCancellations: function(id) {
+	getSuspenions: function(id) {
 		return new Promise(function(resolve, reject) {
-			db.query("SELECT * FROM temporary_cancellations WHERE customer_id = ?", [id], (err, results) => {
+			db.query("SELECT * FROM suspensions WHERE customer_id = ?", [id], (err, results) => {
 				if (err) reject(err);
 				else resolve(results);
 			});
 		});
 	}
 };
+
+/**
+ * Creates a new object with the specified key-value pairs in the props array (shallow copy).
+ * @example
+ * createReducedObject({a: 1, b: 2, c: 3}, ["a", "b"]); // Returns {a: 1, b: 2}
+ * @param {object} obj The object whose values to copy from
+ * @param {string[]} props The list of properties to copy
+ * @returns {object}
+ */
+function reducedCopy(obj, props) {
+	var newObj = {};
+	props.forEach(el => newObj[el] = obj[el]);
+	return newObj;
+}
+
+function ValidationError(err) {
+	this.code = "ERR_VALIDATION";
+	this.invalidFields = err;
+}
