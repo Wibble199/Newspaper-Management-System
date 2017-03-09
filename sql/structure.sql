@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Mar 03, 2017 at 01:39 AM
+-- Generation Time: Mar 09, 2017 at 09:56 PM
 -- Server version: 5.6.29
 -- PHP Version: 7.0.5
 
@@ -24,14 +24,15 @@ CREATE TABLE `customers` (
   `id` int(11) UNSIGNED NOT NULL,
   `email` varchar(64) NOT NULL,
   `password` varchar(60) NOT NULL,
-  `name` varchar(32) NOT NULL,
-  `address1` varchar(32) NOT NULL,
-  `address2` varchar(32) NOT NULL,
-  `address3` varchar(32) DEFAULT NULL,
-  `address4` varchar(32) DEFAULT NULL,
+  `name` varchar(64) NOT NULL,
+  `address1` varchar(64) NOT NULL,
+  `address2` varchar(64) NOT NULL,
+  `address3` varchar(64) NOT NULL,
+  `address4` varchar(64) NOT NULL,
   `postcode` varchar(8) NOT NULL,
-  `contactnum` varchar(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `contact_num` varchar(11) NOT NULL,
+  `is_admin` tinyint(1) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -54,9 +55,23 @@ CREATE TABLE `subscriptions` (
   `id` int(10) UNSIGNED NOT NULL,
   `customer_id` int(10) UNSIGNED NOT NULL,
   `publication_id` int(10) UNSIGNED NOT NULL,
-  `startdate` date NOT NULL,
-  `enddate` date DEFAULT NULL
+  `start_date` date NOT NULL,
+  `end_date` date DEFAULT NULL,
+  `delivery_days` tinyint(3) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `suspensions`
+--
+
+CREATE TABLE `suspensions` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `customer_id` int(10) UNSIGNED NOT NULL,
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Indexes for dumped tables
@@ -83,6 +98,13 @@ ALTER TABLE `subscriptions`
   ADD KEY `publication_id` (`publication_id`);
 
 --
+-- Indexes for table `suspensions`
+--
+ALTER TABLE `suspensions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `subscription_id` (`customer_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -102,6 +124,11 @@ ALTER TABLE `publications`
 ALTER TABLE `subscriptions`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
+-- AUTO_INCREMENT for table `suspensions`
+--
+ALTER TABLE `suspensions`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+--
 -- Constraints for dumped tables
 --
 
@@ -109,5 +136,11 @@ ALTER TABLE `subscriptions`
 -- Constraints for table `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  ADD CONSTRAINT `fk_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_publication` FOREIGN KEY (`publication_id`) REFERENCES `publications` (`id`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_subscriptions_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_subscriptions_publication` FOREIGN KEY (`publication_id`) REFERENCES `publications` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `suspensions`
+--
+ALTER TABLE `suspensions`
+  ADD CONSTRAINT `fk_cancellations_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;

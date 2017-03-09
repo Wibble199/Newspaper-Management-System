@@ -1,7 +1,7 @@
 const expressSession = require('express-session');
 const passport = require('passport');
 const Strategy = require('passport-local').Strategy;
-const users = require('./users');
+const db = require('./db-interface');
 
 module.exports = function(app) {
 	// Middlewares
@@ -11,7 +11,7 @@ module.exports = function(app) {
 
 	// Login strategy
 	passport.use(new Strategy({usernameField: "email", passwordField: "password"}, function(username, password, done) {
-		users.checkLogin(username, password).then(function(user) { // If login passed
+		db.users.checkLogin(username, password).then(function(user) { // If login passed
 			done(null, user);
 
 		}, function(err) { // If login failed
@@ -22,8 +22,12 @@ module.exports = function(app) {
 		});
 	}));
 
+	// User serialization
 	passport.serializeUser((user, done) => done(null, user.id));
-	passport.deserializeUser((id, done) => users.getUserById(id).then(user => done(null, user), err => done(err, null)));
+	passport.deserializeUser((id, done) => db.users.getById(id).then(
+		user => done(null, user),
+		err => done(err, null)
+	));
 
 	// Login routing
 	app.post('/login', (req, res, next) => {
