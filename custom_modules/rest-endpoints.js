@@ -69,7 +69,7 @@ module.exports = function(app) {
 	// ------------------------- //
 	// Fetch all suspensions
 	app.get("/suspensions", requireAuth((req, res) => {
-		db.getCancellations(req.user.id).then(
+		db.suspensions.getByUserId(req.user.id).then(
 			results => res.json({success: true, results}),
 			err => res.json({success: false, err})
 		);
