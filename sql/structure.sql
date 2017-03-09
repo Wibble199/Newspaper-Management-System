@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Mar 08, 2017 at 09:46 PM
+-- Generation Time: Mar 09, 2017 at 09:56 PM
 -- Server version: 5.6.29
 -- PHP Version: 7.0.5
 
@@ -69,8 +69,8 @@ CREATE TABLE `subscriptions` (
 CREATE TABLE `suspensions` (
   `id` int(10) UNSIGNED NOT NULL,
   `customer_id` int(10) UNSIGNED NOT NULL,
-  `cancellation_start` date NOT NULL,
-  `cancellation_end` date NOT NULL
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --

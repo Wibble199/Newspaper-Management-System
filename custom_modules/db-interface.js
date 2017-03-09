@@ -125,9 +125,7 @@ module.exports = {
 				// For the parameters to pass into the query, reduce to only contain the ones in the array (if extra stuff it in the object the query would be invalid)
 				asyncQuery("INSERT INTO subscriptions SET ?", reducedCopy(data, ["customer_id", "publication_id", "start_date", "end_date", "delivery_days"]))
 
-			).then(results => { // On query successful finish (pass error forwards)
-				return results.insertId; // Return the newly created item's id
-			});
+			).then(results => results.insertId); // On query successful finish return the newly created item's id (will pass error forwards)
 		},
 
 		/**
@@ -196,7 +194,11 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		getById: function(id) {
-			return asyncQuery("SELECT * FROM suspensions WHERE id = ?", [id]);
+			return asyncQuery("SELECT * FROM suspensions WHERE id = ?", [id]).then(results => {
+				if (results.length != 1)
+					throw new Error("No suspension found with that ID");
+				return results[0];
+			});
 		},
 
 		/**
@@ -206,6 +208,69 @@ module.exports = {
 		 */
 		getByUserId: function(id) {
 			return asyncQuery("SELECT * FROM suspensions WHERE customer_id = ?", [id]);
+		},
+
+		/**
+		 * Attempts to add a new suspension into the system. It must not overlap any suspensions that the customer already has.
+		 * Returns a Promise that will be resolved with the newly inserted ID on success or reject with an error.
+		 * @param {object} data The map containing the properties for the suspension (customer_id, start_date, end_date)
+		 * @returns {Promise}
+		 */
+		insert: function(data) {
+			var err = validator.validateMap({
+				customer_id: validator.NUMBERS_ONLY,
+				start_date: validator.DATE_YYYY_MM_DD,
+				end_date: validator.DATE_YYYY_MM_DD
+			}, data);
+
+			if (err) return Promise.reject(new ValidationError(err));
+
+			return asyncQuery("SELECT id FROM suspensions WHERE customer_id = ? AND start_date < ? AND end_date > ?", [data.customer_id, data.end_date, data.start_date]).then(results => {
+				if (results.length > 0)
+					throw new ValidationError("A suspension overlapping these dates for this customer already exists");
+			}).then(() =>
+				asyncQuery("INSERT INTO suspensions SET ?", reducedCopy(data, ["customer_id", "start_date", "end_date"]))
+			).then(
+				results => results.insertId
+			);
+		},
+
+		/**
+		 * Attempts to update an existing suspension.
+		 * Returns a Promise that will resolve with no value on success or reject on error.
+		 * @param {number} id The ID of the suspension to update
+		 * @param {object} data The data to update the suspension with
+		 */
+		update: function(id, data) {
+			var err = validator.validateMap({
+				customer_id: validator.NUMBERS_ONLY,
+				start_date: validator.DATE_YYYY_MM_DD,
+				end_date: validator.DATE_YYYY_MM_DD
+			}, data);
+
+			if (err) return Promise.reject(new ValidationError(err));
+
+			return asyncQuery("SELECT id FROM suspensions WHERE id != ? AND customer_id = ? AND start_date < ? AND end_date > ?", [id, data.customer_id, data.end_date, data.start_date]).then(results => {
+				if (results.length > 0)
+					throw new ValidationError("A suspension overlapping these dates for this customer already exists");
+			}).then(() =>
+				asyncQuery("UPDATE suspensions SET ? WHERE id = ?", [reducedCopy(data, ["customer_id", "start_date", "end_date"]), id])
+			).then(results => {
+				if (results.affectedRows != 1)
+					throw new ValidationError("Failed to update row with that ID");
+			});
+		},
+
+		/**
+		 * Attempt to delete a suspension with a particular ID.
+		 * Returns a Promise that will resolve with no value on success or reject on error.
+		 * @param {number} id The ID of the suspension to attempt to delete
+		 */
+		delete: function(id) {
+			return asyncQuery("DELETE FROM suspensions WHERE id = ?", [id]).then(results => {
+				if (results.affectedRows != 1) // If any less than 1 row was affected, the operation was unsuccessful
+					throw new ValidationError("Failed to delete row with given ID");
+			});
 		}
 	}
 };
@@ -232,10 +297,10 @@ function reducedCopy(obj, props) {
  */
 function asyncQuery(query, queryParams) {
 	return new Promise(function(resolve, reject) {
-		db.query(query, queryParams, (err, results) => {
+		console.log("SQL > " + db.query(query, queryParams, (err, results) => {
 			if (err) reject(err);
 			else resolve(results);
-		});
+		}).sql);
 	});
 }
 

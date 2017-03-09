@@ -30,9 +30,9 @@ module.exports = function(app) {
 
 	// Add new subscription
 	app.post("/subscriptions", requireAuth((req, res) => {
-		req.body.customer_id = req.user.id; // Add the user ID to the data for the subscription
+		req.body.customer_id = req.user.id; // Add the user ID to the data for the subscription (will also ensure that customers cannot subscribe other customers)
 		db.subscriptions.insert(req.body).then(
-			newId => res.json({success: true, id: newId}),
+			id => res.json({success: true, id}),
 			err => res.json({success: false, err})
 		)
 	}));
@@ -71,6 +71,43 @@ module.exports = function(app) {
 	app.get("/suspensions", requireAuth((req, res) => {
 		db.suspensions.getByUserId(req.user.id).then(
 			results => res.json({success: true, results}),
+			err => res.json({success: false, err})
+		);
+	}));
+
+	// Add new suspension
+	app.post("/suspensions", requireAuth((req, res) => {
+		req.body.customer_id = req.user.id;
+		console.log(req.body);
+		db.suspensions.insert(req.body).then(
+			id => res.json({success: true, id}),
+			err => res.json({success: false, err})
+		);
+	}));
+
+	// Update existing suspension
+	app.put("/suspensions/:id", requireAuth((req, res) => {
+		req.body.customer_id = req.user.id; // Add the user ID to the data for the suspension
+		(req.user.is_admin ? Promise.resolve() : db.suspensions.getById(req.params.id).then(susp => { // Ensure the customer who is attempting to update this row is the customer that created it (or an admin)
+			if (susp.customer_id != req.user.id)
+				throw "Invalid user ID";
+		})).then(
+			() => db.suspensions.update(req.params.id, req.body)
+		).then(
+			() => res.json({success: true}),
+			err => res.json({success: false, err})
+		);
+	}));
+
+	// Delete existing suspension
+	app.delete("/suspensions/:id", requireAuth((req, res) => {
+		(req.user.is_admin ? Promise.resolve() : db.suspensions.getById(req.params.id).then(susp => { // Ensure the customer who is attempting to delete this row is the customer that created it (or an admin)
+			if (susp.customer_id != req.user.id)
+				throw "Invalid user ID";
+		})).then(
+			() => db.suspensions.delete(req.params.id)
+		).then(
+			() => res.json({success: true}),
 			err => res.json({success: false, err})
 		);
 	}));
