@@ -14,14 +14,11 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		getById: function(id) {
-			return new Promise((resolve, reject) => {
-				db.query("SELECT * FROM customers WHERE customers.id = ?", [id], (err, results) => {
-					if (err) reject(err);
-					else if (results.length == 1) {
-						delete results[0].password; // Delete the password property
-						resolve(results[0]); // Return the user
-					} else reject(Error("No user found with id " + id));
-				});
+			return asyncQuery("SELCT * FROM customers WHERE customers.id = ?", [id]).then(results => {
+				if (results.length != 1)
+					throw new Error("No user found with id " + id);
+				delete results[0].password; // Delete the password property
+				return results[0]; // Return the user
 			});
 		},
 
@@ -33,22 +30,17 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		checkLogin: function(email, pwd) {
-			return new Promise((resolve, reject) => {
-				db.query("SELECT * FROM customers WHERE LOWER(customers.email) = ?", [email.toLowerCase()], (err, results) => { // Find the user from email
-					if (err) // Server error
-						reject(err);
-					else if (results.length != 1) // No user with email was found
-						reject(Error("Invalid login credentials"));
+			return asyncQuery("SELECT * FROM customers WHERE LOWER(customers.email) = ?", [email.toLowerCase()]).then(results => { // Find the user from email
+				if (results.length != 1) // No user with email was found
+					throw new Error("Invalid login credentials");
 
-					else { // If a user was found with that email
-						if (bcrypt.compareSync(pwd, results[0].password)) { // Check password hash
-							delete results[0].password; // Delete pw so it doesn't get returned
-							resolve(results[0]); // Rsolve with the user's data
+				// Else if a user was found with that email
+				if (bcrypt.compareSync(pwd, results[0].password)) { // Check password hash
+					delete results[0].password; // Delete pw so it doesn't get returned
+					return results[0]; // Rsolve with the user's data
 
-						} else // If invalid password
-							reject(Error("Invalid login credentials"));
-					}
-				});
+				} else // If invalid password
+					throw new Error("Invalid login credentials");
 			});
 		},
 
@@ -62,14 +54,11 @@ module.exports = {
 		updatePassword: function(id, password) {
 			if (!password) return Promise.reject("Invalid password");
 
-			return new Promise((resolve, reject) => {
-				password = bcrypt.hashSync(password, 10);
+			password = bcrypt.hashSync(password, 10); // Hash the PW
 
-				db.query("UPDATE customers SET password = ? WHERE customers.id = ?", [password, id], (err, results) => {
-					if (err) reject(err);
-					else if (results.affectedRows == 1) resolve();
-					else reject(Error("No user found with id " + id));
-				});
+			return asyncQuery("UPDATE customers SET password = ? WHERE customers.id = ?", [password, id]).done(results => {
+				if (results.affectedRows != 1)
+					throw new Error("No user found with id " + id);
 			});
 		}
 	},
@@ -83,12 +72,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		get: function() {
-			return new Promise(function(resolve, reject) {
-				db.query("SELECT s.*, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id", (err, results) => {
-					if (err) reject(err);
-					else resolve(results);
-				});
-			});
+			return asyncQuery("SELECT s.*, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id");
 		},
 
 		/**
@@ -97,12 +81,10 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		getById: function(id) {
-			return new Promise(function(resolve, reject) {
-				db.query("SELECT s.*, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.id = ?", [id], (err, results) => {
-					if (err) reject(err);
-					else if (results.length == 1) resolve(results[0]);
-					else reject(Error("No subscription found with that ID"));
-				});
+			return asyncQuery("SELECT s.*, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.id = ?", [id]).then(results => {
+				if (results.length != 1)
+					throw new Error("No subscription found with that ID");
+				return results[0];
 			});
 		},
 
@@ -112,12 +94,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		getByUserId: function(id) {
-			return new Promise(function(resolve, reject) {
-				db.query("SELECT s.*, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id], (err, results) => {
-					if (err) reject(err);
-					else resolve(results);
-				});
-			});
+			return asyncQuery("SELECT s.*, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id]);
 		},
 
 		/**
@@ -138,22 +115,19 @@ module.exports = {
 
 			if (err) return Promise.reject(new ValidationError(err));
 
-			return new Promise(function(resolve, reject) { // First check if this customer is already subscribed to this publication during these dates
-				db.query("SELECT id FROM subscriptions WHERE customer_id = ? AND publication_id = ? AND start_date < ? AND end_date > ?", [data.customer_id, data.publication_id, data.end_date, data.start_date], (err, results) => {
-					if (err) reject(err);
-					else if (results.length == 0) resolve(); // If no overlap was found - go ahead to the next query
-					else reject(new ValidationError("Overlapping dates with existing subscription")); // If an overlapping identical publication was found reject
-				});
+			// First check if this customer is already subscribed to this publication during these dates
+			return asyncQuery("SELECT id FROM subscriptions WHERE customer_id = ? AND publication_id = ? AND start_date < ? AND end_date > ?", [data.customer_id, data.publication_id, data.end_date, data.start_date]).then(results => {
+				if (results.length != 0) 
+					throw new ValidationError("Overlapping dates with existing subscription"); // If an overlapping identical publication was found throw an error
+				// Else if no overlap was found - go ahead to the next query
+				
+			}).then(() => 
+				// For the parameters to pass into the query, reduce to only contain the ones in the array (if extra stuff it in the object the query would be invalid)
+				asyncQuery("INSERT INTO subscriptions SET ?", reducedCopy(data, ["customer_id", "publication_id", "start_date", "end_date", "delivery_days"]))
 
-			}).then(new Promise(function(resolve, reject) {
-				// Create an object with the data to go into the query
-				var queryParams = reducedCopy(data, ["customer_id", "publication_id", "start_date", "end_date", "delivery_days"]); // Will ignore any other fields
-
-				db.query("INSERT INTO subscriptions SET ?", queryParams, (err, results) => {
-					if (err) reject(err);
-					else resolve(results.insertId);
-				});
-			}));
+			).then(results => { // On query successful finish (pass error forwards)
+				return results.insertId; // Return the newly created item's id
+			});
 		},
 
 		/**
@@ -175,23 +149,19 @@ module.exports = {
 
 			if (err) return Promise.reject(new ValidationError(err));
 
-			return new Promise(function(resolve, reject) { // First check if this customer is already subscribed to this publication during these dates (and that the overlapping one is not the one being edited)
-				db.query("SELECT id FROM subscriptions WHERE id != ? AND customer_id = ? AND publication_id = ? AND start_date < ? AND end_date > ?", [id, data.customer_id, data.publication_id, data.end_date, data.start_date], (err, results) => {
-					if (err) reject(err);
-					else if (results.length == 0) resolve(); // If no overlap was found - go ahead to the next query
-					else reject(new ValidationError("Overlapping dates with existing subscription")); // If an overlapping identical publication was found reject
-				});
+			return asyncQuery("SELECT id FROM subscriptions WHERE id != ? AND customer_id = ? AND publication_id = ? AND start_date < ? AND end_date > ?", [id, data.customer_id, data.publication_id, data.end_date, data.start_date]).then(results => {
+				if (results.length != 0)
+					throw new ValidationError("Overlapping dates with existing subscription"); // If an overlapping identical publication was found throw an error
+			
+			}).then(() =>
+				// For the array of values for the query, the reducedCopied object will be used for SET and the id will be used for... well... id
+				// We get something like: UPDATE subscriptions `SET customer_id = 1, publication_id = 2 ...<ETC>... WHERE id = 5` which is what we need
+				asyncQuery("UPDATE subscriptions SET ? WHERE id = ?", [reducedCopy(data, ["customer_id", "publication_id", "start_date", "end_date", "delivery_days"]), id])
 
-			}).then(new Promise(function(resolve, reject) {
-				// Create an object with the data to go into the query
-				var queryParams = reducedCopy(data, ["customer_id", "publication_id", "start_date", "end_date", "delivery_days"]); // Will ignore any other fields
-
-				db.query("UPDATE subscriptions SET ? WHERE id = ?", [queryParams, id], (err, results) => {
-					if (err) reject(err);
-					else if (results.affectedRows == 1) resolve();
-					else reject(new ValidationError("Failed to update row with that ID"));
-				});
-			}));
+			).then(() => {
+ 				if (results.affectedRows != 1) // If 1 row alone was updated, the operation was successful
+					throw new ValidationError("Failed to update row with that ID");
+			});
 		},
 
 		/**
@@ -201,12 +171,9 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		delete: function(id) {
-			return new Promise(function(resolve, reject) {
-				db.query("DELETE FROM subscriptions WHERE id = ?", [id], (err, results) => {
-					if (err) reject(err);
-					else if (results.affectedRows == 1) resolve();
-					else reject(new ValidationError("Failed to delete row with given ID"))
-				});
+			return asyncQuery("DELETE FROM subscriptions WHERE id = ?", [id]).then(results => {
+				if (results.affectedRows != 1) // If any less than 1 row was affected, the operation was unsuccessful
+					throw new ValidationError("Failed to delete row with given ID");
 			});
 		}
 	},
@@ -220,12 +187,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		get: function() {
-			return new Promise(function(resolve, reject) {
-				db.query("SELECT * FROM suspensions", (err, results) => {
-					if (err) reject(err);
-					else resolve(results);
-				});
-			});
+			return asyncQuery("SELECT * FROM suspensions");
 		},
 
 		/**
@@ -234,12 +196,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		getById: function(id) {
-			return new Promise(function(resolve, reject) {
-				db.query("SELECT * FROM suspensions WHERE id = ?", [id], (err, results) => {
-					if (err) reject(err);
-					else resolve(results);
-				});
-			});
+			return asyncQuery("SELECT * FROM suspensions WHERE id = ?", [id]);
 		},
 
 		/**
@@ -248,12 +205,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		getByUserId: function(id) {
-			return new Promise(function(resolve, reject) {
-				db.query("SELECT * FROM suspensions WHERE customer_id = ?", [id], (err, results) => {
-					if (err) reject(err);
-					else resolve(results);
-				});
-			});
+			return asyncQuery("SELECT * FROM suspensions WHERE customer_id = ?", [id]);
 		}
 	}
 };
@@ -272,6 +224,23 @@ function reducedCopy(obj, props) {
 	return newObj;
 }
 
+/**
+ * Performs a query on the database and returns a promise which will resolve with the result of the query or, if an error occurs, will reject with that error.
+ * @param {string} query The query to perform on the database
+ * @param {object | *[]} [queryParams] Any parameters to be passed to the query (see https://www.npmjs.com/package/mysql#performing-queries)
+ * @returns {Promise}
+ */
+function asyncQuery(query, queryParams) {
+	return new Promise(function(resolve, reject) {
+		db.query(query, queryParams, (err, results) => {
+			if (err) reject(err);
+			else resolve(results);
+		});
+	});
+}
+
+// ValidationError class
+// TODO: BETTER ERROR HANDLING!!!!
 function ValidationError(err) {
 	this.code = "ERR_VALIDATION";
 	this.invalidFields = err;
