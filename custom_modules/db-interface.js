@@ -14,7 +14,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		getById: function(id) {
-			return asyncQuery("SELCT * FROM customers WHERE customers.id = ?", [id]).then(results => {
+			return asyncQuery("SELECT * FROM customers WHERE customers.id = ?", [id]).then(results => {
 				if (results.length != 1)
 					throw new Error("No user found with id " + id);
 				delete results[0].password; // Delete the password property
