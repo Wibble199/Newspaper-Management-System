@@ -4,6 +4,7 @@
 	<title>App</title>
 	<link rel="stylesheet" href="/css/bootstrap.min.css" />
 	<link rel="stylesheet" href="/css/app.css" />
+	<link rel="stylesheet" href="/css/bootstrap-datepicker.standalone.min.css" />
 </head>
 <body>
 	<!-- Top nav bar -->
@@ -30,6 +31,7 @@
 		</div>
 	</nav>
 
+	<!-- Main container -->
 	<div class="container-fluid">
 
 		<!-- Alert container -->
@@ -82,8 +84,66 @@
 		</div>
 	</div>
 
+	<!-- Edit subscription modal -->
+	<div id="edit-subscription-mdl" class="modal fade" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+					<h4 class="modal-title">Edit subscription</h4>
+				</div>
+				<div class="modal-body">
+					<form class="form-horizontal">
+
+						<div class="form-group">
+							<label for="subscription-edit-publication" class="col-sm-3 control-label">Publication</label>
+							<div class="col-sm-9">
+								<select id="subscription-edit-publication" class="form-control" data-subscription-binding="publication_id">
+									<option value="-1" hidden></option>
+								</select>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Dates:</label>
+							<div class="col-sm-4">
+								<input id="subscription-edit-start-date" type="text" class="form-control" data-subscription-binding="start_date" data-date-type>
+							</div>
+							<div class="col-sm-1" style="position:relative;top:7px;">
+								To
+							</div>
+							<div class="col-sm-4">
+								<input id="subscription-edit-end-date" type="text" class="form-control" data-subscription-binding="end_date" data-date-type>
+								<label class="checkbox-inline"><input type="checkbox" id="subscription-edit-start-date-null" checked> Until I cancel</label>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Deliver on:</label>
+							<div class="col-sm-9" data-subscription-binding="delivery_days">
+								<label class="checkbox-inline"><input type="checkbox" value="2"> Mon</label>
+								<label class="checkbox-inline"><input type="checkbox" value="4"> Tue</label>
+								<label class="checkbox-inline"><input type="checkbox" value="8"> Wed</label>
+								<label class="checkbox-inline"><input type="checkbox" value="16"> Thu</label>
+								<label class="checkbox-inline"><input type="checkbox" value="32"> Fri</label>
+								<label class="checkbox-inline"><input type="checkbox" value="64"> Sat</label>
+								<label class="checkbox-inline"><input type="checkbox" value="1"> Sun</label>
+							</div>
+						</div>
+
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" data-action="save-subscription">Save changes</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Templates -->
 	<script id="subscription-list-item" type="text/template">
-	<li class="list-group-item">Ormskirk Herald
+	<li class="list-group-item"><%- name %>
 		<div class="btn-group btn-group-xs pull-right">
 			<a class="btn btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
 			<a class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span></a>
@@ -100,6 +160,7 @@
 
 	<script src="/js/jquery.min.js"></script>
 	<script src="/js/bootstrap.min.js"></script>
+	<script src="/js/bootstrap-datepicker.min.js"></script>
 	<script src="/js/app.js"></script>
 </body>
 </html>
