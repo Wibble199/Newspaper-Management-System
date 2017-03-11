@@ -6,3 +6,13 @@ body {
 	position: relative;
     top: -20px;
 }
+
+.edit-delete-group {
+	position: absolute;
+    right: 9px;
+    top: 18px;
+}
+
+s {
+	opacity: 0.5;
+}
