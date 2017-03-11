@@ -13,7 +13,7 @@ module.exports = validator = {
 	/** Indicates the string must be in a valid email format */
 	EMAIL_ADDR: {test: /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/, message: "Email address"},
 	/** Indicates the string must be a YYYY-MM-DD date format */
-	DATE_YYYY_MM_DD: {test: /^(19|20)\d{2}-[01]\d-[012]\d$/, message: "Date"},
+	DATE_YYYY_MM_DD: {test: /^(19|20)\d{2}-[01]\d-[0123]\d$/, message: "Date"},
 
 	// ---------- //
 	// Functions //
