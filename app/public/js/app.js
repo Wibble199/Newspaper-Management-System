@@ -1,4 +1,4 @@
-new Vue({
+var vm = new Vue({
 	el: '#app',
 
 	data: {
@@ -35,10 +35,10 @@ new Vue({
 			});
 		},
 
-		// Add the current data in the modal as a new subscription
-		addSubscription: function() {
+		// Adds or edits the current form data in the modal
+		saveSubscription: function() {
 			var thisVue = this;
-			var isUpdate = false;//thisVue.$data.subscriptionEditId > 0; // True if updating existing subscription, false if adding new
+			var isUpdate = thisVue.$data.subscriptionEditId > 0; // True if updating existing subscription, false if adding new
 			
 			$.ajax({
 				url: '/subscriptions' + (isUpdate ? "/" + thisVue.$data.subscriptionEditId : ""),
@@ -48,7 +48,18 @@ new Vue({
 			}).done(function(d) {
 				if (d.success)
 					return $.getJSON('/subscriptions/' + d.id).done(function(d) {
-						thisVue.$data.subscriptions.push(d.result);
+						if (isUpdate) {
+							// If updating existing subscription, find the index of that subscription (NOT the same as its ID) and update that object
+							for (var i = thisVue.$data.subscriptions.length; i--;) {
+								if (thisVue.$data.subscriptions[i].id == thisVue.$data.subscriptionEditId) {
+									thisVue.$data.subscriptions[i] = d.result;
+									break;
+								}
+							}
+						} else {
+							// If adding new subscription, simply push it onto the subscription list
+							thisVue.$data.subscriptions.push(d.result);
+						}
 						$('#edit-subscription-mdl').modal("hide");
 					});
 
@@ -81,6 +92,22 @@ new Vue({
 		openSubscriptionModal: function(id) {
 			this.$data.subscriptionEditId = id;
 			$('#edit-subscription-mdl').modal("show");
+
+			var selectedModel = {};
+			if (id > 0) {
+				for (var i = this.$data.subscriptions.length; i--;) {
+					if (this.$data.subscriptions[i].id == id) {
+						selectedModel = this.$data.subscriptions[i];
+						break;
+					}
+				}
+			}
+
+			$('[data-subscription-binding="publication_id"]').val(selectedModel.publication_id);
+			$('[data-subscription-binding="start_date"]').datepicker('update', new Date(selectedModel.start_date));
+			$('[data-subscription-binding="end_date"]').datepicker('update', selectedModel.end_date == null ? null : new Date(selectedModel.end_date));
+			$('#subscription-edit-start-date-null').prop("checked", selectedModel.end_date == null);
+			deliveryDaysSet(selectedModel.delivery_days);
 		},
 
 		// ------------------- //
@@ -119,18 +146,13 @@ $(function() {
 });
 
 function getSubscriptionFormVal() {
-	var model = {
-		delivery_days: 0
-	};
+	var model = {};
 
 	model.publication_id = $('[data-subscription-binding="publication_id"]').val();
 	model.start_date = dateConverter_yyyymmdd($('[data-subscription-binding="start_date"]').val());
 	if ($('#subscription-edit-start-date-null').is(':checked'))
 		model.end_date = dateConverter_yyyymmdd($('[data-subscription-binding="end_date"]').val());
-
-	$('[data-subscription-binding="delivery_days"] input[type="checkbox"]:checked').each(function() {
-		model.delivery_days += +$(this).val();
-	});
+	model.delivery_days = deliveryDaysGet();
 
 	return model;
 }
@@ -139,4 +161,20 @@ function dateConverter_yyyymmdd(ddmmyyyy) {
 	if (ddmmyyyy == null || ddmmyyyy == "") return "";
 	var parts = ddmmyyyy.split("/");
 	return parts[2] + "-" + parts[1] + "-" + parts[0];
+}
+
+// Functions to get and set value for the delivery days checkboxes
+function deliveryDaysGet() {
+	var sum = 0;
+	$('[data-subscription-binding="delivery_days"] input[type="checkbox"]:checked').each(function() {
+		sum += +$(this).val();
+	});
+	return sum;
+}
+
+function deliveryDaysSet(val) {
+	$('[data-subscription-binding="delivery_days"] input[type="checkbox"]').each(function() {
+		var $this = $(this), thisVal = $(this).val();
+		$this.prop('checked', (val & thisVal) == thisVal);
+	});
 }

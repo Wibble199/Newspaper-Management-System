@@ -55,7 +55,7 @@
 
 					<div class="panel panel-info"> <!-- Subscription list panel -->
 						<div class="panel-heading">
-							<h3 class="panel-title">Subscriptions</h3>
+							<h3 class="panel-title">My subscriptions</h3>
 							<a href="javascript:void(0)" class="btn btn-success btn-xs pull-right add-button" v-on:click.prevent="openSubscriptionModal(-1)"><span class="glyphicon glyphicon-plus"></span></a>
 						</div>
 						<div class="panel-body">
@@ -65,7 +65,7 @@
     								<p class="list-group-item-text" v-html="getDayString(sub.delivery_days)"></p>
 
 									<div class="btn-group btn-group-xs edit-delete-group">
-										<a href="javascript:void(0)" class="btn btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
+										<a href="javascript:void(0)" class="btn btn-default" v-on:click.prevent="openSubscriptionModal(sub.id)"><span class="glyphicon glyphicon-pencil"></span></a>
 										<a href="javascript:void(0)" class="btn btn-danger" v-on:click.prevent="deleteSubscription"><span class="glyphicon glyphicon-trash"></span></a>
 									</div>
 								</li>
@@ -75,7 +75,7 @@
 
 					<div class="panel panel-info"> <!-- Suspension list panel -->
 						<div class="panel-heading">
-							<h3 class="panel-title">Suspensions</h3>
+							<h3 class="panel-title">My suspensions</h3>
 							<a href="javascript:void(0)" class="btn btn-success btn-xs pull-right add-button"><span class="glyphicon glyphicon-plus"></span></a>
 						</div>
 						<div class="panel-body">
@@ -135,13 +135,13 @@
 							<div class="form-group">
 								<label class="col-sm-3 control-label">Deliver on:</label>
 								<div class="col-sm-9" data-subscription-binding="delivery_days">
+									<label class="checkbox-inline"><input type="checkbox" value="1"> Sun</label>
 									<label class="checkbox-inline"><input type="checkbox" value="2"> Mon</label>
 									<label class="checkbox-inline"><input type="checkbox" value="4"> Tue</label>
 									<label class="checkbox-inline"><input type="checkbox" value="8"> Wed</label>
 									<label class="checkbox-inline"><input type="checkbox" value="16"> Thu</label>
 									<label class="checkbox-inline"><input type="checkbox" value="32"> Fri</label>
 									<label class="checkbox-inline"><input type="checkbox" value="64"> Sat</label>
-									<label class="checkbox-inline"><input type="checkbox" value="1"> Sun</label>
 								</div>
 							</div>
 
@@ -149,7 +149,7 @@
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary" v-on:click="addSubscription">Save changes</button>
+						<button type="button" class="btn btn-primary" v-on:click="saveSubscription">Save changes</button>
 					</div>
 				</div>
 			</div>
