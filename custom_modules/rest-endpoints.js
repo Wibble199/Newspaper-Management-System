@@ -28,6 +28,18 @@ module.exports = function(app) {
 		);
 	}));
 
+	// Fetch single subscription
+	app.get("/subscriptions/:id", requireAuth((req, res) => {
+		db.subscriptions.getById(req.params.id).then(
+			result => {
+				if (req.user.is_admin || result.customer_id == req.user.id) res.json({success: true, result});
+				else throw "You do not have permission to view that subscription";
+			}
+		).catch(
+			err => res.json({success: false, err})
+		);
+	}));
+
 	// Add new subscription
 	app.post("/subscriptions", requireAuth((req, res) => {
 		req.body.customer_id = req.user.id; // Add the user ID to the data for the subscription (will also ensure that customers cannot subscribe other customers)
@@ -71,6 +83,18 @@ module.exports = function(app) {
 	app.get("/suspensions", requireAuth((req, res) => {
 		db.suspensions.getByUserId(req.user.id).then(
 			results => res.json({success: true, results}),
+			err => res.json({success: false, err})
+		);
+	}));
+
+	// Fetch single suspension
+	app.get("/suspensions/:id", requireAuth((req, res) => {
+		db.suspensions.getById(req.params.id).then(
+			result => {
+				if (req.user.is_admin || result.customer_id == req.user.id) res.json({success: true, result});
+				else throw "You do not have permission to view that suspension";
+			}
+		).catch(
 			err => res.json({success: false, err})
 		);
 	}));

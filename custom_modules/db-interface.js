@@ -189,7 +189,7 @@ module.exports = {
 		},
 
 		/**
-		 * Fetch the suspensions for a particular user. Returns a promise that resolves with results or rejects with error.
+		 * Fetch the suspensions by suspension ID. Returns a promise that resolves with results or rejects with error.
 		 * @param {number} id The ID of the suspension to fetch
 		 * @returns {Promise}
 		 */
