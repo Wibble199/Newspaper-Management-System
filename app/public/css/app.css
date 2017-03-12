@@ -10,8 +10,10 @@ body {
 .edit-delete-group {
 	position: absolute;
     right: 9px;
-    top: 18px;
 }
+
+#subscription-list .edit-delete-group { top: 18px; }
+#suspension-list .edit-delete-group { top: 13px; }
 
 s {
 	opacity: 0.5;

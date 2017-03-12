@@ -9,6 +9,7 @@ var vm = new Vue({
 
 		// Client only data
 		subscriptionEditId: -1,
+		suspensionEditId: -1,
 
 		endDateDisabled: true
 	},
@@ -129,6 +130,30 @@ var vm = new Vue({
 			});
 		},
 
+		saveSuspension: function() {
+
+		},
+
+		editModeSuspension: function(e) {
+			var targetLi = $(e.currentTarget).closest('[data-suspension-id]');
+			var suspensionId = targetLi.data('suspension-id'), suspensionIndex = targetLi.index();
+			var editMode = suspensionId != this.$data.suspensionEditId; // True if we are ENTERING edit mode
+			this.$data.suspensionEditId = editMode ? suspensionId : -1;
+
+			// This `editModeSuspension` function is called when the edit/save button is clicked, however at this point the
+			// DOM has not been updated to reflect the changes in `suspensionEditId`. I.E. the input boxes do not exist, so
+			// we can use the `nextTick` function to set the values of the inputs on the next tick, or `Defer the callback
+			// to be executed after the next DOM update cycle' - https://vuejs.org/v2/api/#Vue-nextTick
+			Vue.nextTick(function() {
+				$('.input-daterange').datepicker('remove').datepicker(datepickerOptions);
+			});
+
+		},
+
+		deleteSuspension: function(e) {
+			
+		},
+
 		// ----- //
 		// Misc //
 		// --- //
@@ -146,6 +171,13 @@ var vm = new Vue({
 	}
 });
 
+var datepickerOptions = {
+	autoclose: true,
+	format: "dd/mm/yyyy",
+	todayBtn: "linked",
+	todayHighlight: true
+};
+
 var monthlyOptions = {
 	stylePast: true,
 	eventList: false,
@@ -157,12 +189,7 @@ var monthlyOptions = {
 };
 
 $(function() {
-	$('input[data-date-type]').datepicker({
-		autoclose: true,
-		format: "dd/mm/yyyy",
-		todayHighlight: true
-	});
-
+	$('input[data-date-type]').datepicker(datepickerOptions);
 	$('#main-calendar').monthly(monthlyOptions);
 });
 

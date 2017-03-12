@@ -81,10 +81,23 @@
 						</div>
 						<div class="panel-body">
 							<ul id="suspension-list" class="list-group">
-								<li class="list-group-item" v-for="susp in suspensions" v-bind:data-suspension-id="susp.id">{{susp.start_date}} - {{susp.end_date}}
-									<div class="btn-group btn-group-xs pull-right">
-										<a class="btn btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
-										<a class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span></a>
+								<li class="list-group-item" v-for="susp in suspensions" v-bind:data-suspension-id="susp.id">
+
+									<div v-if="suspensionEditId!=susp.id" style="margin:5px 0">
+										<span data-binding="suspension-start-date">{{susp.start_date}}</span>
+										&ndash;
+										<span data-binding="suspension-start-date">{{susp.end_date}}</span>
+									</div>
+
+									<div class="input-daterange input-group" style="margin-right:50px" v-else>
+										<input type="text" class="input-sm form-control" name="start" />
+										<span class="input-group-addon">to</span>
+										<input type="text" class="input-sm form-control" name="end" />
+									</div>
+
+									<div class="btn-group btn-group-xs edit-delete-group">
+										<a class="btn" v-bind:class="{'btn-default':suspensionEditId!=susp.id, 'btn-success':suspensionEditId==susp.id}" v-on:click.prevent="editModeSuspension"><span class="glyphicon" v-bind:class="{'glyphicon-pencil':suspensionEditId!=susp.id, 'glyphicon-floppy-disk':suspensionEditId==susp.id}"></span></a>
+										<a class="btn btn-danger" v-on:click.prevent="deleteSuspension"><span class="glyphicon glyphicon-trash"></span></a>
 									</div>
 								</li>
 							</ul>
