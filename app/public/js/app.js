@@ -47,12 +47,13 @@ var vm = new Vue({
 
 			}).done(function(d) {
 				if (d.success)
-					return $.getJSON('/subscriptions/' + d.id).done(function(d) {
+					return $.getJSON('/subscriptions/' + (isUpdate ? thisVue.$data.subscriptionEditId : d.id)).done(function(d) {
+						console.log(d);
 						if (isUpdate) {
 							// If updating existing subscription, find the index of that subscription (NOT the same as its ID) and update that object
 							for (var i = thisVue.$data.subscriptions.length; i--;) {
 								if (thisVue.$data.subscriptions[i].id == thisVue.$data.subscriptionEditId) {
-									thisVue.$data.subscriptions[i] = d.result;
+									thisVue.$set(thisVue.$data.subscriptions, i, d.result); // Cannot use `thisVue.$data.subscriptions[i] = d.result` as this changes the reference and the binding breaks
 									break;
 								}
 							}

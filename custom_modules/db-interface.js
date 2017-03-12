@@ -156,7 +156,7 @@ module.exports = {
 				// We get something like: UPDATE subscriptions `SET customer_id = 1, publication_id = 2 ...<ETC>... WHERE id = 5` which is what we need
 				asyncQuery("UPDATE subscriptions SET ? WHERE id = ?", [reducedCopy(data, ["customer_id", "publication_id", "start_date", "end_date", "delivery_days"]), id])
 
-			).then(() => {
+			).then(results => {
  				if (results.affectedRows != 1) // If 1 row alone was updated, the operation was successful
 					throw new ValidationError("Failed to update row with that ID");
 			});
