@@ -26,7 +26,10 @@ Monthly 2.2.0 by Kevin Thornbloom is licensed under a Creative Commons Attributi
 				target: "",
 				useIsoDateFormat: false,
 				weekStart: 0,	// Sunday
-				xmlUrl: ""
+				xmlUrl: "",
+
+				onStartFetch: undefined,
+				onFinishFetch: undefined
 			};
 
 			var	options = $.extend(defaults, customOptions),
@@ -284,10 +287,21 @@ Monthly 2.2.0 by Kevin Thornbloom is licensed under a Creative Commons Attributi
 				if(remoteUrl) {
 					// Replace variables for month and year to load from dynamic sources
 					var url = String(remoteUrl).replace("{month}", month).replace("{year}", year);
+
+					// Call the start fetch event - if there is one
+					if (typeof options.onStartFetch == "function") options.onStartFetch($(parent));
+
 					$.get(url, {now: $.now()}, function(data) {
 						addEventsFromString(data, month, year);
+
+						// Call the finish fetch event - if there is one
+						if (typeof options.onFinishFetch == "function") options.onFinishFetch($(parent));
+
 					}, options.dataType).fail(function() {
 						console.error("Monthly.js failed to import " + remoteUrl + ". Please check for the correct path and " + options.dataType + " syntax.");
+
+						// Call the finish event - if there is one
+						if (typeof options.onFinishFetch == "function") options.onFinishFetch($(parent));
 					});
 				}
 			}

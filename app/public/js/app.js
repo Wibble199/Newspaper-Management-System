@@ -150,7 +150,10 @@ var monthlyOptions = {
 	stylePast: true,
 	eventList: false,
 	dataType: "json",
-	jsonUrl: "/events.json" /* /events/{year}/{month} */
+	jsonUrl: "/events.json", /* /events/{year}/{month} */
+
+	onStartFetch: function() { $('#main-calendar').loadingOverlay(true); },
+	onFinishFetch: function() { $('#main-calendar').loadingOverlay(false); }
 };
 
 $(function() {
