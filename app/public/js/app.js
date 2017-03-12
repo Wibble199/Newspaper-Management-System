@@ -138,13 +138,26 @@ var vm = new Vue({
 	}
 });
 
+var monthlyOptions = {
+	stylePast: true,
+	eventList: false,
+	dataType: "json",
+	jsonUrl: "/events.json" /* /events/{year}/{month} */
+};
+
 $(function() {
 	$('input[data-date-type]').datepicker({
 		autoclose: true,
 		format: "dd/mm/yyyy",
 		todayHighlight: true
 	});
+
+	$('#main-calendar').monthly(monthlyOptions);
 });
+
+function reloadMonthlyCurrent() {
+	$('#main-calendar').monthly($.extend({reloadEvents: true}, monthlyOptions));
+}
 
 function getSubscriptionFormVal() {
 	var model = {};

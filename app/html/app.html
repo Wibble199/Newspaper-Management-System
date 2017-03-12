@@ -3,8 +3,9 @@
 <head>
 	<title>App</title>
 	<link rel="stylesheet" href="/css/bootstrap.min.css" />
-	<link rel="stylesheet" href="/css/app.css" />
 	<link rel="stylesheet" href="/css/bootstrap-datepicker.standalone.min.css" />
+	<link rel="stylesheet" href="/css/monthly.min.css" />
+	<link rel="stylesheet" href="/css/app.css" />
 </head>
 <body>
 	<div id="app"> <!-- Vue model holder -->
@@ -92,7 +93,7 @@
 				</div>
 
 				<div class="col-md-8"> <!-- Right main panel -->
-					A calendar will go here eventually
+					<div class="monthly" id="main-calendar">
 				</div>
 			</div>
 		</div>
@@ -160,6 +161,7 @@
 	<script src="/js/jquery.min.js"></script>
 	<script src="/js/bootstrap.min.js"></script>
 	<script src="/js/bootstrap-datepicker.min.js"></script>
+	<script src="/js/monthly.js"></script>
 	<script src="/js/vue.min.js"></script>
 	<script src="/js/app.js"></script>
 </body>
