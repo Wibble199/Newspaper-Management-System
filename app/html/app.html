@@ -128,8 +128,8 @@
 									To
 								</div>
 								<div class="col-sm-4">
-									<input id="subscription-edit-end-date" type="text" class="form-control" data-subscription-binding="end_date" data-date-type>
-									<label class="checkbox-inline"><input type="checkbox" id="subscription-edit-start-date-null" checked> Until I cancel</label>
+									<input id="subscription-edit-end-date" type="text" class="form-control" data-subscription-binding="end_date" v-bind:disabled="endDateDisabled" data-date-type>
+									<label class="checkbox-inline"><input type="checkbox" id="subscription-edit-start-date-null" v-model="endDateDisabled" checked> Until I cancel</label>
 								</div>
 							</div>
 

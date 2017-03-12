@@ -8,7 +8,9 @@ var vm = new Vue({
 		suspensions: [],
 
 		// Client only data
-		subscriptionEditId: -1
+		subscriptionEditId: -1,
+
+		endDateDisabled: true
 	},
 
 	mounted: function() {
@@ -107,7 +109,7 @@ var vm = new Vue({
 			$('[data-subscription-binding="publication_id"]').val(selectedModel.publication_id);
 			$('[data-subscription-binding="start_date"]').datepicker('update', new Date(selectedModel.start_date));
 			$('[data-subscription-binding="end_date"]').datepicker('update', selectedModel.end_date == null ? null : new Date(selectedModel.end_date));
-			$('#subscription-edit-start-date-null').prop("checked", selectedModel.end_date == null);
+			vm.$data.endDateDisabled = selectedModel.end_date == null;
 			deliveryDaysSet(selectedModel.delivery_days);
 		},
 
@@ -164,7 +166,7 @@ function getSubscriptionFormVal() {
 
 	model.publication_id = $('[data-subscription-binding="publication_id"]').val();
 	model.start_date = dateConverter_yyyymmdd($('[data-subscription-binding="start_date"]').val());
-	if ($('#subscription-edit-start-date-null').is(':checked'))
+	if (!vm.$data.endDateDisabled)
 		model.end_date = dateConverter_yyyymmdd($('[data-subscription-binding="end_date"]').val());
 	model.delivery_days = deliveryDaysGet();
 
