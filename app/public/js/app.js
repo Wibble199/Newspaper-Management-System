@@ -41,6 +41,8 @@ var vm = new Vue({
 		saveSubscription: function() {
 			var thisVue = this;
 			var isUpdate = thisVue.$data.subscriptionEditId > 0; // True if updating existing subscription, false if adding new
+
+			$('#edit-subscription-mdl .modal-content').loadingOverlay(true);
 			
 			$.ajax({
 				url: '/subscriptions' + (isUpdate ? "/" + thisVue.$data.subscriptionEditId : ""),
@@ -63,7 +65,9 @@ var vm = new Vue({
 							// If adding new subscription, simply push it onto the subscription list
 							thisVue.$data.subscriptions.push(d.result);
 						}
+
 						$('#edit-subscription-mdl').modal("hide");
+						$('#edit-subscription-mdl .modal-content').loadingOverlay(false);
 					});
 
 			}).fail(function(err) {
@@ -78,6 +82,8 @@ var vm = new Vue({
 			var subscriptionId = targetLi.data('subscription-id'), subscriptionIndex = targetLi.index();
 
 			if (confirm("Are you sure?")) {
+				targetLi.loadingOverlay(true);
+
 				$.ajax({
 					url: '/subscriptions/' + subscriptionId,
 					method: "DELETE"
@@ -193,4 +199,25 @@ function deliveryDaysSet(val) {
 		var $this = $(this), thisVal = $(this).val();
 		$this.prop('checked', (val & thisVal) == thisVal);
 	});
+}
+
+(function($) {
+	$.fn.loadingOverlay = function(enable) {
+		$.each(this, function() {
+			var $this = $(this);
+
+			if (enable) {
+				if ($this.children('.loading-overlay').length == 0)
+					$this.append('<div class="loading-overlay"><div class="loading-icon"></div></div>');
+			} else
+				$this.children('.loading-overlay').remove();
+			
+		});
+
+		return this;
+	}
+})(jQuery);
+
+function createAlert(type, title, message) {
+
 }

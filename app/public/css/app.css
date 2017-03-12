@@ -16,3 +16,28 @@ body {
 s {
 	opacity: 0.5;
 }
+
+.loading-overlay {
+	background-color: rgba(255, 255, 255, 0.4);
+	position: absolute;
+	top: 0; left: 0;
+	bottom: 0; right: 0;
+}
+
+.loading-overlay .loading-icon {
+	position: absolute;
+	top: 50%; left: 50%;
+	transform: translate(-50%, -50%);
+	width: 40px; height: 40px;
+
+	border: 3px solid rgba(0, 0, 0, 0.3);
+	border-left-color: rgba(0, 0, 0, 0.7);
+	border-radius: 20px;
+
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	0% { transform: translate(-50%, -50%) rotate(0deg); }
+	100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
