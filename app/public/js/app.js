@@ -23,7 +23,7 @@ var vm = new Vue({
 	methods: {
 		fetchUser: function() {
 			var thisVue = this;
-			$.getJSON('/user').done(function(d) {
+			ajax('/user').then(function(d) {
 				thisVue.$data.user = d.user;
 			});
 		},
@@ -33,7 +33,7 @@ var vm = new Vue({
 		// ------------------- //
 		fetchSubscriptions: function() {
 			var thisVue = this;
-			$.getJSON('/subscriptions').done(function(d) {
+			ajax('/subscriptions').then(function(d) {
 				thisVue.$data.subscriptions = convertDates(d.results);
 			});
 		},
@@ -45,33 +45,35 @@ var vm = new Vue({
 
 			$('#edit-subscription-mdl .modal-content').loadingOverlay(true);
 			
-			$.ajax({
+			ajax({
 				url: '/subscriptions' + (isUpdate ? "/" + thisVue.$data.subscriptionEditId : ""),
 				method: isUpdate ? "PUT" : "POST",
 				data: $.param(getSubscriptionFormVal())
 
-			}).done(function(d) {
+			}).then(function(d) {
 				if (d.success)
-					return $.getJSON('/subscriptions/' + (isUpdate ? thisVue.$data.subscriptionEditId : d.id)).done(function(d) {
-						console.log(d);
-						if (isUpdate) {
-							// If updating existing subscription, find the index of that subscription (NOT the same as its ID) and update that object
-							for (var i = thisVue.$data.subscriptions.length; i--;) {
-								if (thisVue.$data.subscriptions[i].id == thisVue.$data.subscriptionEditId) {
-									thisVue.$set(thisVue.$data.subscriptions, i, d.result); // Cannot use `thisVue.$data.subscriptions[i] = d.result` as this changes the reference and the binding breaks
-									break;
-								}
-							}
-						} else {
-							// If adding new subscription, simply push it onto the subscription list
-							thisVue.$data.subscriptions.push(d.result);
+					return ajax('/subscriptions/' + (isUpdate ? thisVue.$data.subscriptionEditId : d.id));
+				else
+					throw d.err || "Unknown error occured";
+				
+			}).then(function(d) {
+				if (isUpdate) {
+					// If updating existing subscription, find the index of that subscription (NOT the same as its ID) and update that object
+					for (var i = thisVue.$data.subscriptions.length; i--;) {
+						if (thisVue.$data.subscriptions[i].id == thisVue.$data.subscriptionEditId) {
+							thisVue.$set(thisVue.$data.subscriptions, i, convertDateObj(d.result)); // Cannot use `thisVue.$data.subscriptions[i] = d.result` as this changes the reference and the binding breaks
+							break;
 						}
+					}
+				} else {
+					// If adding new subscription, simply push it onto the subscription list
+					thisVue.$data.subscriptions.push(d.result);
+				}
 
-						$('#edit-subscription-mdl').modal("hide");
-						$('#edit-subscription-mdl .modal-content').loadingOverlay(false);
-					});
+				$('#edit-subscription-mdl').modal("hide");
+				$('#edit-subscription-mdl .modal-content').loadingOverlay(false);
 
-			}).fail(function(err) {
+			}).catch(function(err) {
 				console.error(err);
 			});
 		},
@@ -85,15 +87,15 @@ var vm = new Vue({
 			if (confirm("Are you sure?")) {
 				targetLi.loadingOverlay(true);
 
-				$.ajax({
+				ajax({
 					url: '/subscriptions/' + subscriptionId,
 					method: "DELETE"
 
-				}).done(function(d) {
+				}).then(function(d) {
 					if (d.success)
 						thisVue.$data.subscriptions.splice(subscriptionIndex, 1);
 
-				}).fail(function(err) {
+				}).catch(function(err) {
 					alert("Failed to delete: " + err);
 				});
 			}
@@ -125,7 +127,7 @@ var vm = new Vue({
 		// ----------------- //
 		fetchSuspensions: function() {
 			var thisVue = this;
-			$.getJSON('/suspensions').done(function(d) {
+			ajax('/suspensions').then(function(d) {
 				thisVue.$data.suspensions = convertDates(d.results);
 			});
 		},
@@ -162,21 +164,28 @@ var vm = new Vue({
 				targetLi.loadingOverlay(true);
 
 				var thisVue = this;
-				$.ajax({
+				ajax({
 					url: "/suspensions/" + suspensionId,
 					method: "PUT",
 					data: $.param({
 						start_date: targetLi.find('[name="suspension-start-date"]').datepicker('getDate').toISOString(),
 						end_date: targetLi.find('[name="suspension-end-date"]').datepicker('getDate').toISOString()
 					})
-				}).done(function(d) {
+				}).then(function(d) {
 					if (d.success) {
-						// temporary solution - TODO: fetch this subscription from the server
-						targetLi.loadingOverlay(false);
 						thisVue.$data.suspensionEditId = -1;
-					}
+						return ajax({url: "/suspensions/1"});
+					} else
+						throw d.err || "Unknown error occured"; // Pass error onto 'catch'
 
-				}).fail(function(err) {
+				}).then(function(d) {
+					if (d.success) {
+						thisVue.$set(thisVue.$data.suspensions, suspensionIndex, convertDateObj(d.result));
+						targetLi.loadingOverlay(false);
+					} else
+						throw d.err || "Unknown error occured"; // Pass error onto 'catch'
+
+				}).catch(function(err) {
 
 					targetLi.loadingOverlay(false);
 					console.error(err);
@@ -234,11 +243,16 @@ function reloadMonthlyCurrent() {
 
 // Takes an array of objects with `start_date` and `end_date` properties (in ISO string) and converts them to Date objects
 function convertDates(d) {
-	for (var i = d.length; i--;) {
-		d[i].start_date = new Date(d[i].start_date);
-		if (d[i].end_date !== null)
-			d[i].end_date = new Date(d[i].end_date);
-	}
+	for (var i = d.length; i--;)
+		convertDateObj(d[i]);
+	return d;
+}
+
+// Takes an object `start_date` and `end_date` properties (in ISO string) and converts them to Date objects
+function convertDateObj(d) {
+	d.start_date = new Date(d.start_date);
+	if (d.end_date !== null)
+		d.end_date = new Date(d.end_date);
 	return d;
 }
 
@@ -302,4 +316,12 @@ function deliveryDaysSet(val) {
 
 function createAlert(type, title, message) {
 
+}
+
+function ajax(options) {
+	return new Promise(function(resolve, reject) {
+		$.ajax(options)
+			.done(function(dat) { resolve(dat); })
+			.fail(function(err) { reject(err); });
+	});
 }

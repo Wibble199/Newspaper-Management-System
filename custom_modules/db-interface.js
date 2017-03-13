@@ -185,7 +185,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		get: function() {
-			return asyncQuery("SELECT *, DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date, DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date FROM suspensions");
+			return asyncQuery("SELECT * FROM suspensions");
 		},
 
 		/**
@@ -194,7 +194,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		getById: function(id) {
-			return asyncQuery("SELECT *, DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date, DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date FROM suspensions WHERE id = ?", [id]).then(results => {
+			return asyncQuery("SELECT * FROM suspensions WHERE id = ?", [id]).then(results => {
 				if (results.length != 1)
 					throw new Error("No suspension found with that ID");
 				return results[0];
@@ -207,7 +207,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		getByUserId: function(id) {
-			return asyncQuery("SELECT *, DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date, DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date FROM suspensions WHERE customer_id = ?", [id]);
+			return asyncQuery("SELECT * FROM suspensions WHERE customer_id = ?", [id]);
 		},
 
 		/**
