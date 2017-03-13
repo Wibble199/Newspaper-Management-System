@@ -4,6 +4,10 @@ const Strategy = require('passport-local').Strategy;
 const db = require('./db-interface');
 
 module.exports = function(app) {
+	// User cache to prevent repeated SQL calls each time a logged in user makes any request to the server
+	var userCache = {};
+	var enableUserCache = process.argv.indexOf("--disable-user-cache") < 0;
+
 	// Middlewares
 	app.use(expressSession({secret: "ormskirknewspaper", resave: true, saveUninitialized: true}));
 	app.use(passport.initialize());
@@ -24,10 +28,18 @@ module.exports = function(app) {
 
 	// User serialization
 	passport.serializeUser((user, done) => done(null, user.id));
-	passport.deserializeUser((id, done) => db.users.getById(id).then(
-		user => done(null, user),
-		err => done(err, null)
-	));
+	passport.deserializeUser((id, done) => {
+		if (enableUserCache && userCache[id])
+			done(null, userCache[id]);
+		else
+			db.users.getById(id).then(
+				user => {
+					if (enableUserCache) userCache[id] = user;
+					done(null, user);
+				},
+				err => done(err, null)
+			)
+	});
 
 	// Login routing
 	app.post('/login', (req, res, next) => {

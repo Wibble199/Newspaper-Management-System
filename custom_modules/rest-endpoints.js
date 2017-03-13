@@ -135,6 +135,42 @@ module.exports = function(app) {
 			err => res.json({success: false, err})
 		);
 	}));
+
+	// --------------------------- //
+	// GENERATING-ONLY END POINTS //
+	// ------------------------- //
+	// Fetch the details from the calendar for a given month
+	app.get('/calendar/:year/:month', (req, res) => {
+		Promise.all([
+			db.generate.calendarEvents(1, req.params.year, req.params.month),
+			db.suspensions.getByUserId(1)
+
+		]).then(results => {
+			var events = [];
+
+			// results[0] = results from calendarEvents promise
+			results[0].forEach(el => events.push({
+				name: el.name,
+				startdate: el.date,
+				color: "#FFB128" // ToDo: Currently uses a fixed color
+			}));
+
+			// Currently it will return all suspensions for a user, not just the ones in the given month, but there
+			// are likely to be relatively few suspensions so this should not be a big issue.
+			// results[1] => results from suspensions.getByUserId promise
+			results[1].forEach(el => events.push({
+				name: "Suspension",
+				startdate: new Date(el.start_date).toDateYYYYMMDD(),
+				enddate: new Date(el.end_date).toDateYYYYMMDD(),
+				color: "#FF2828"
+			}));
+
+			res.json({success: true, events});
+
+		}).catch(
+			err => res.json({success: false, err})
+		)
+	})
 };
 
 /**
@@ -162,4 +198,13 @@ function requireAdmin(next) {
 		else
 			res.status(401).send("Unauthorized");
 	}
+}
+
+/**
+ * Function returns a date string in the format 'YYYY-MM-DD' for the given date.
+ * @returns {string}
+ */
+Date.prototype.toDateYYYYMMDD = function() {
+	var mon = this.getMonth() + 1, day = this.getDate();
+	return this.getFullYear() + "-" + (mon < 10 ? "0" : "") + mon + "-" + (day < 10 ? "0" : "") + day;
 }

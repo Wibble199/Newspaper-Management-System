@@ -1,6 +1,9 @@
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
 const db = require('./db-connection');
 const validator = require('./validator');
+
+var generateCalendarEvents_qry = fs.readFileSync('./app/sql/generate-calendar-events.sql', 'utf8');
 
 module.exports = {
 	// ----------------------- //
@@ -272,6 +275,15 @@ module.exports = {
 					throw new ValidationError("Failed to delete row with given ID");
 			});
 		}
+	},
+
+	// -------------------------- //
+	// Generation-only functions //
+	// ------------------------ //
+	generate: {
+		calendarEvents: function(customerId, year, month) {
+			return asyncQuery(queryNamedParams(generateCalendarEvents_qry, {customerId, year, month}));
+		}
 	}
 };
 
@@ -309,4 +321,17 @@ function asyncQuery(query, queryParams) {
 function ValidationError(err) {
 	this.code = "ERR_VALIDATION";
 	this.invalidFields = err;
+}
+
+/**
+ * Takes a query and will replace any instances of `::name` with the escaped value of `name` from the parameters object. `name` can be made up of letters, numbers, underscores (_) and dashes (-).
+ * Note: Only normal escaping is currently supported (like when using `?` with the mysql library) not identifier escaping (like `??` with the mysql library) - so this cannot be used with table or column names.
+ * @param {string} q The query to escape
+ * @param {object} params The parameters for the query
+ * @return {string}
+ */
+function queryNamedParams(q, params) {
+	return q.replace(/::([A-Za-z0-9_-]+)/g, function(_, pName) {
+		return db.escape(params[pName]);
+	});
 }
