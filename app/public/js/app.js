@@ -72,6 +72,7 @@ var vm = new Vue({
 
 				$('#edit-subscription-mdl').modal("hide");
 				$('#edit-subscription-mdl .modal-content').loadingOverlay(false);
+				reloadMonthlyCurrent();
 
 			}).catch(function(err) {
 				console.error(err);
@@ -182,6 +183,7 @@ var vm = new Vue({
 					if (d.success) {
 						thisVue.$set(thisVue.$data.suspensions, suspensionIndex, convertDateObj(d.result));
 						targetLi.loadingOverlay(false);
+						reloadMonthlyCurrent();
 					} else
 						throw d.err || "Unknown error occured"; // Pass error onto 'catch'
 
@@ -226,7 +228,7 @@ var monthlyOptions = {
 	stylePast: true,
 	eventList: false,
 	dataType: "json",
-	jsonUrl: "/events.json", /* /events/{year}/{month} */
+	jsonUrl: "/calendar/{year}/{month}",
 
 	onStartFetch: function() { $('#main-calendar').loadingOverlay(true); },
 	onFinishFetch: function() { $('#main-calendar').loadingOverlay(false); }
