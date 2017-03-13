@@ -72,7 +72,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		get: function() {
-			return asyncQuery("SELECT s.*, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id");
+			return asyncQuery("SELECT s.*, p.name, DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date, DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id");
 		},
 
 		/**
@@ -81,7 +81,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		getById: function(id) {
-			return asyncQuery("SELECT s.*, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.id = ?", [id]).then(results => {
+			return asyncQuery("SELECT s.*, p.name, DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date, DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.id = ?", [id]).then(results => {
 				if (results.length != 1)
 					throw new Error("No subscription found with that ID");
 				return results[0];
@@ -94,7 +94,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		getByUserId: function(id) {
-			return asyncQuery("SELECT s.*, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id]);
+			return asyncQuery("SELECT s.*, p.name, DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date, DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id]);
 		},
 
 		/**
@@ -108,8 +108,8 @@ module.exports = {
 			var err = validator.validateMap({
 				customer_id: validator.NUMBERS_ONLY,
 				publication_id: validator.NUMBERS_ONLY,
-				start_date: validator.DATE_YYYY_MM_DD,
-				end_date: [validator.OPTIONAL, validator.DATE_YYYY_MM_DD],
+				start_date: validator.DATE_ISO,
+				end_date: [validator.OPTIONAL, validator.DATE_ISO],
 				delivery_days: validator.NUMBERS_ONLY
 			}, data);
 
@@ -140,8 +140,8 @@ module.exports = {
 			var err = validator.validateMap({
 				customer_id: validator.NUMBERS_ONLY,
 				publication_id: validator.NUMBERS_ONLY,
-				start_date: validator.DATE_YYYY_MM_DD,
-				end_date: [validator.OPTIONAL, validator.DATE_YYYY_MM_DD],
+				start_date: validator.DATE_ISO,
+				end_date: [validator.OPTIONAL, validator.DATE_ISO],
 				delivery_days: validator.NUMBERS_ONLY
 			}, data);
 
@@ -156,7 +156,7 @@ module.exports = {
 				// We get something like: UPDATE subscriptions `SET customer_id = 1, publication_id = 2 ...<ETC>... WHERE id = 5` which is what we need
 				asyncQuery("UPDATE subscriptions SET ? WHERE id = ?", [reducedCopy(data, ["customer_id", "publication_id", "start_date", "end_date", "delivery_days"]), id])
 
-			).then(() => {
+			).then(results => {
  				if (results.affectedRows != 1) // If 1 row alone was updated, the operation was successful
 					throw new ValidationError("Failed to update row with that ID");
 			});
@@ -219,8 +219,8 @@ module.exports = {
 		insert: function(data) {
 			var err = validator.validateMap({
 				customer_id: validator.NUMBERS_ONLY,
-				start_date: validator.DATE_YYYY_MM_DD,
-				end_date: validator.DATE_YYYY_MM_DD
+				start_date: validator.DATE_ISO,
+				end_date: validator.DATE_ISO
 			}, data);
 
 			if (err) return Promise.reject(new ValidationError(err));
@@ -244,8 +244,8 @@ module.exports = {
 		update: function(id, data) {
 			var err = validator.validateMap({
 				customer_id: validator.NUMBERS_ONLY,
-				start_date: validator.DATE_YYYY_MM_DD,
-				end_date: validator.DATE_YYYY_MM_DD
+				start_date: validator.DATE_ISO,
+				end_date: validator.DATE_ISO
 			}, data);
 
 			if (err) return Promise.reject(new ValidationError(err));

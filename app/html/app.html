@@ -3,13 +3,177 @@
 <head>
 	<title>App</title>
 	<link rel="stylesheet" href="/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="/css/bootstrap-datepicker.standalone.min.css" />
+	<link rel="stylesheet" href="/css/monthly.min.css" />
 	<link rel="stylesheet" href="/css/app.css" />
 </head>
 <body>
-	<h1>Logged in</h1>
-	<a href="/logout">Logout</a>
+	<div id="app"> <!-- Vue model holder -->
+		<!-- Top nav bar -->
+		<nav class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="javascript:void(0)">Ormskirk Newspapers</a>
+				</div>
+				<div id="navbar" class="navbar-collapse collapse">
+					<ul class="nav navbar-nav navbar-right"> <!-- Right hand navbar -->
+						<li><a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">{{user.email}} <span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href="javascript:void(0)">Change password</a></li>
+								<li><a href="/logout">Logout</a></li>
+							</ul>
+						</li>
+				</div>
+			</div>
+		</nav>
 
+		<!-- Main container -->
+		<div id="app" class="container-fluid">
+
+			<!-- Alert container -->
+			<div class="row">
+				<div class="col-md-6">
+					<div class="alert alert-success">
+						<strong>You are due to receive 2 publications tomorrow</strong>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="alert alert-danger">
+						<strong>You missed 1 delivery recently</strong>
+					</div>
+				</div>
+			</div>
+
+			<!-- Main content -->
+			<div class="row">
+				<div class="col-md-4"> <!-- Left main panel -->
+
+					<div class="panel panel-info"> <!-- Subscription list panel -->
+						<div class="panel-heading">
+							<h3 class="panel-title">My subscriptions</h3>
+							<a href="javascript:void(0)" class="btn btn-success btn-xs pull-right add-button" v-on:click.prevent="openSubscriptionModal(-1)"><span class="glyphicon glyphicon-plus"></span></a>
+						</div>
+						<div class="panel-body">
+							<ul id="subscription-list" class="list-group">
+								<li class="list-group-item" v-for="sub in subscriptions" v-bind:data-subscription-id="sub.id">
+									<h4 class="list-group-item-heading">{{sub.name}}</h4>
+    								<p class="list-group-item-text" v-html="getDayString(sub.delivery_days)"></p>
+
+									<div class="btn-group btn-group-xs edit-delete-group">
+										<a href="javascript:void(0)" class="btn btn-default" v-on:click.prevent="openSubscriptionModal(sub.id)"><span class="glyphicon glyphicon-pencil"></span></a>
+										<a href="javascript:void(0)" class="btn btn-danger" v-on:click.prevent="deleteSubscription"><span class="glyphicon glyphicon-trash"></span></a>
+									</div>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="panel panel-info"> <!-- Suspension list panel -->
+						<div class="panel-heading">
+							<h3 class="panel-title">My suspensions</h3>
+							<a href="javascript:void(0)" class="btn btn-success btn-xs pull-right add-button"><span class="glyphicon glyphicon-plus"></span></a>
+						</div>
+						<div class="panel-body">
+							<ul id="suspension-list" class="list-group">
+								<li class="list-group-item" v-for="susp in suspensions" v-bind:data-suspension-id="susp.id">
+
+									<div v-if="suspensionEditId!=susp.id" style="margin:5px 0" v-html="fullDateStr(susp.start_date) + ' &ndash; ' + fullDateStr(susp.end_date)">
+									</div>
+
+									<div class="input-daterange input-group" style="margin-right:50px" v-else>
+										<input type="text" class="input-sm form-control" name="suspension-start-date" />
+										<span class="input-group-addon">to</span>
+										<input type="text" class="input-sm form-control" name="suspension-end-date" />
+									</div>
+
+									<div class="btn-group btn-group-xs edit-delete-group">
+										<a class="btn" v-bind:class="{'btn-default':suspensionEditId!=susp.id, 'btn-success':suspensionEditId==susp.id}" v-on:click.prevent="editModeSuspension"><span class="glyphicon" v-bind:class="{'glyphicon-pencil':suspensionEditId!=susp.id, 'glyphicon-floppy-disk':suspensionEditId==susp.id}"></span></a>
+										<a class="btn btn-danger" v-on:click.prevent="deleteSuspension"><span class="glyphicon glyphicon-trash"></span></a>
+									</div>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-8"> <!-- Right main panel -->
+					<div class="monthly" id="main-calendar">
+				</div>
+			</div>
+		</div>
+
+		<!-- Edit subscription modal -->
+		<div id="edit-subscription-mdl" class="modal fade" tabindex="-1">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+						<h4 class="modal-title">{{subscriptionEditId > 0 ? "Edit" : "Add"}} subscription</h4>
+					</div>
+					<div class="modal-body">
+						<form class="form-horizontal">
+
+							<div class="form-group">
+								<label for="subscription-edit-publication" class="col-sm-3 control-label">Publication</label>
+								<div class="col-sm-9">
+									<select id="subscription-edit-publication" class="form-control" data-subscription-binding="publication_id">
+										<option value="-1" hidden></option>
+										<option value="1">Ormskirk Herald</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-3 control-label">Dates:</label>
+								<div class="col-sm-4">
+									<input id="subscription-edit-start-date" type="text" class="form-control" data-subscription-binding="start_date" data-date-type>
+								</div>
+								<div class="col-sm-1" style="position:relative;top:7px;">
+									To
+								</div>
+								<div class="col-sm-4">
+									<input id="subscription-edit-end-date" type="text" class="form-control" data-subscription-binding="end_date" v-bind:disabled="endDateDisabled" data-date-type>
+									<label class="checkbox-inline"><input type="checkbox" id="subscription-edit-start-date-null" v-model="endDateDisabled" checked> Until I cancel</label>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-3 control-label">Deliver on:</label>
+								<div class="col-sm-9" data-subscription-binding="delivery_days">
+									<label class="checkbox-inline"><input type="checkbox" value="1"> Sun</label>
+									<label class="checkbox-inline"><input type="checkbox" value="2"> Mon</label>
+									<label class="checkbox-inline"><input type="checkbox" value="4"> Tue</label>
+									<label class="checkbox-inline"><input type="checkbox" value="8"> Wed</label>
+									<label class="checkbox-inline"><input type="checkbox" value="16"> Thu</label>
+									<label class="checkbox-inline"><input type="checkbox" value="32"> Fri</label>
+									<label class="checkbox-inline"><input type="checkbox" value="64"> Sat</label>
+								</div>
+							</div>
+
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" v-on:click="saveSubscription">Save changes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+
+	<script src="/js/promise.min.js"></script>
 	<script src="/js/jquery.min.js"></script>
 	<script src="/js/bootstrap.min.js"></script>
+	<script src="/js/bootstrap-datepicker.min.js"></script>
+	<script src="/js/monthly.js"></script>
+	<script src="/js/vue.min.js"></script>
+	<script src="/js/app.js"></script>
 </body>
 </html>
