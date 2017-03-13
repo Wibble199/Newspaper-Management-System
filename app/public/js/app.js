@@ -34,7 +34,7 @@ var vm = new Vue({
 		fetchSubscriptions: function() {
 			var thisVue = this;
 			$.getJSON('/subscriptions').done(function(d) {
-				thisVue.$data.subscriptions = d.results;
+				thisVue.$data.subscriptions = convertDates(d.results);
 			});
 		},
 
@@ -114,8 +114,8 @@ var vm = new Vue({
 			}
 
 			$('[data-subscription-binding="publication_id"]').val(selectedModel.publication_id);
-			$('[data-subscription-binding="start_date"]').datepicker('update', new Date(selectedModel.start_date));
-			$('[data-subscription-binding="end_date"]').datepicker('update', selectedModel.end_date == null ? null : new Date(selectedModel.end_date));
+			$('[data-subscription-binding="start_date"]').datepicker('setDate', selectedModel.start_date);
+			$('[data-subscription-binding="end_date"]').datepicker('setDate', selectedModel.end_date == null ? null : selectedModel.end_date);
 			vm.$data.endDateDisabled = selectedModel.end_date == null;
 			deliveryDaysSet(selectedModel.delivery_days);
 		},
@@ -126,7 +126,7 @@ var vm = new Vue({
 		fetchSuspensions: function() {
 			var thisVue = this;
 			$.getJSON('/suspensions').done(function(d) {
-				thisVue.$data.suspensions = d.results;
+				thisVue.$data.suspensions = convertDates(d.results);
 			});
 		},
 
@@ -135,18 +135,53 @@ var vm = new Vue({
 		},
 
 		editModeSuspension: function(e) {
+			// If the user clicks to edit a suspension while they are editing a different one, `editMode` will be true
+			// and we will assume they wish to discard their changes. No special handling is needed as the Vue template
+			// engine will take care care of the DOM for us.
+
 			var targetLi = $(e.currentTarget).closest('[data-suspension-id]');
 			var suspensionId = targetLi.data('suspension-id'), suspensionIndex = targetLi.index();
 			var editMode = suspensionId != this.$data.suspensionEditId; // True if we are ENTERING edit mode
-			this.$data.suspensionEditId = editMode ? suspensionId : -1;
 
-			// This `editModeSuspension` function is called when the edit/save button is clicked, however at this point the
-			// DOM has not been updated to reflect the changes in `suspensionEditId`. I.E. the input boxes do not exist, so
-			// we can use the `nextTick` function to set the values of the inputs on the next tick, or `Defer the callback
-			// to be executed after the next DOM update cycle' - https://vuejs.org/v2/api/#Vue-nextTick
-			Vue.nextTick(function() {
-				$('.input-daterange').datepicker('remove').datepicker(datepickerOptions);
-			});
+			if (editMode) {
+				this.$data.suspensionEditId = suspensionId;
+
+				// This `editModeSuspension` function is called when the edit/save button is clicked, however at this point the
+				// DOM has not been updated to reflect the changes in `suspensionEditId`. I.E. the input boxes do not exist, so
+				// we can use the `nextTick` function to set the values of the inputs on the next tick, or `Defer the callback
+				// to be executed after the next DOM update cycle' - https://vuejs.org/v2/api/#Vue-nextTick
+				Vue.nextTick(function() {
+					targetLi.find('.input-daterange').datepicker('remove').datepicker(datepickerOptions);
+
+					targetLi.find('[name="suspension-start-date"]').datepicker('setDate', this.$data.suspensions[suspensionIndex].start_date);
+					targetLi.find('[name="suspension-end-date"]').datepicker('setDate', this.$data.suspensions[suspensionIndex].end_date);
+				}, this /*make 'this' inside nextTick also refer to this Vue instance*/);
+
+			} else { // !editMode
+
+				targetLi.loadingOverlay(true);
+
+				var thisVue = this;
+				$.ajax({
+					url: "/suspensions/" + suspensionId,
+					method: "PUT",
+					data: $.param({
+						start_date: targetLi.find('[name="suspension-start-date"]').datepicker('getDate').toISOString(),
+						end_date: targetLi.find('[name="suspension-end-date"]').datepicker('getDate').toISOString()
+					})
+				}).done(function(d) {
+					if (d.success) {
+						// temporary solution - TODO: fetch this subscription from the server
+						targetLi.loadingOverlay(false);
+						thisVue.$data.suspensionEditId = -1;
+					}
+
+				}).fail(function(err) {
+
+					targetLi.loadingOverlay(false);
+					console.error(err);
+				})
+			}
 
 		},
 
@@ -197,22 +232,39 @@ function reloadMonthlyCurrent() {
 	$('#main-calendar').monthly($.extend({reloadEvents: true}, monthlyOptions));
 }
 
+// Takes an array of objects with `start_date` and `end_date` properties (in ISO string) and converts them to Date objects
+function convertDates(d) {
+	for (var i = d.length; i--;) {
+		d[i].start_date = new Date(d[i].start_date);
+		if (d[i].end_date !== null)
+			d[i].end_date = new Date(d[i].end_date);
+	}
+	return d;
+}
+
 function getSubscriptionFormVal() {
 	var model = {};
 
 	model.publication_id = $('[data-subscription-binding="publication_id"]').val();
-	model.start_date = dateConverter_yyyymmdd($('[data-subscription-binding="start_date"]').val());
+	model.start_date = $('[data-subscription-binding="start_date"]').datepicker("getDate").toISOString();
 	if (!vm.$data.endDateDisabled)
-		model.end_date = dateConverter_yyyymmdd($('[data-subscription-binding="end_date"]').val());
+		model.end_date = $('[data-subscription-binding="end_date"]').datepicker("getDate").toISOString();
 	model.delivery_days = deliveryDaysGet();
 
 	return model;
 }
 
-function dateConverter_yyyymmdd(ddmmyyyy) {
-	if (ddmmyyyy == null || ddmmyyyy == "") return "";
-	var parts = ddmmyyyy.split("/");
-	return parts[2] + "-" + parts[1] + "-" + parts[0];
+function fullDateStr(d) {
+	var dateSuffix = "th";
+	switch(d.getDate()) {
+		case 1: case 21: case 31: dateSuffix = "st"; break;
+		case 2: case 22: dateSuffix = "nd"; break;
+		case 3: case 23: dateSuffix = "rd"; break;
+	}
+
+	return d.getDate() + "<sup>" + dateSuffix + "</sup> " +
+		["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()] + " " +
+		d.getFullYear();
 }
 
 // Functions to get and set value for the delivery days checkboxes

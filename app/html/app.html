@@ -83,16 +83,13 @@
 							<ul id="suspension-list" class="list-group">
 								<li class="list-group-item" v-for="susp in suspensions" v-bind:data-suspension-id="susp.id">
 
-									<div v-if="suspensionEditId!=susp.id" style="margin:5px 0">
-										<span data-binding="suspension-start-date">{{susp.start_date}}</span>
-										&ndash;
-										<span data-binding="suspension-start-date">{{susp.end_date}}</span>
+									<div v-if="suspensionEditId!=susp.id" style="margin:5px 0" v-html="fullDateStr(susp.start_date) + ' &ndash; ' + fullDateStr(susp.end_date)">
 									</div>
 
 									<div class="input-daterange input-group" style="margin-right:50px" v-else>
-										<input type="text" class="input-sm form-control" name="start" />
+										<input type="text" class="input-sm form-control" name="suspension-start-date" />
 										<span class="input-group-addon">to</span>
-										<input type="text" class="input-sm form-control" name="end" />
+										<input type="text" class="input-sm form-control" name="suspension-end-date" />
 									</div>
 
 									<div class="btn-group btn-group-xs edit-delete-group">

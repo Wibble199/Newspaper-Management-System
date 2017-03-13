@@ -108,8 +108,8 @@ module.exports = {
 			var err = validator.validateMap({
 				customer_id: validator.NUMBERS_ONLY,
 				publication_id: validator.NUMBERS_ONLY,
-				start_date: validator.DATE_YYYY_MM_DD,
-				end_date: [validator.OPTIONAL, validator.DATE_YYYY_MM_DD],
+				start_date: validator.DATE_ISO,
+				end_date: [validator.OPTIONAL, validator.DATE_ISO],
 				delivery_days: validator.NUMBERS_ONLY
 			}, data);
 
@@ -140,8 +140,8 @@ module.exports = {
 			var err = validator.validateMap({
 				customer_id: validator.NUMBERS_ONLY,
 				publication_id: validator.NUMBERS_ONLY,
-				start_date: validator.DATE_YYYY_MM_DD,
-				end_date: [validator.OPTIONAL, validator.DATE_YYYY_MM_DD],
+				start_date: validator.DATE_ISO,
+				end_date: [validator.OPTIONAL, validator.DATE_ISO],
 				delivery_days: validator.NUMBERS_ONLY
 			}, data);
 
@@ -219,8 +219,8 @@ module.exports = {
 		insert: function(data) {
 			var err = validator.validateMap({
 				customer_id: validator.NUMBERS_ONLY,
-				start_date: validator.DATE_YYYY_MM_DD,
-				end_date: validator.DATE_YYYY_MM_DD
+				start_date: validator.DATE_ISO,
+				end_date: validator.DATE_ISO
 			}, data);
 
 			if (err) return Promise.reject(new ValidationError(err));
@@ -244,8 +244,8 @@ module.exports = {
 		update: function(id, data) {
 			var err = validator.validateMap({
 				customer_id: validator.NUMBERS_ONLY,
-				start_date: validator.DATE_YYYY_MM_DD,
-				end_date: validator.DATE_YYYY_MM_DD
+				start_date: validator.DATE_ISO,
+				end_date: validator.DATE_ISO
 			}, data);
 
 			if (err) return Promise.reject(new ValidationError(err));

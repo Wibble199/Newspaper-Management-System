@@ -14,6 +14,8 @@ module.exports = validator = {
 	EMAIL_ADDR: {test: /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/, message: "Email address"},
 	/** Indicates the string must be a YYYY-MM-DD date format */
 	DATE_YYYY_MM_DD: {test: /^(19|20)\d{2}-[01]\d-[0123]\d$/, message: "Date"},
+	/** Indicates the string must be an ISO date format */
+	DATE_ISO: {test: /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)$/, message: "Date"},
 
 	// ---------- //
 	// Functions //
