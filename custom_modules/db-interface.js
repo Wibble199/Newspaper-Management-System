@@ -293,6 +293,19 @@ module.exports = {
 		}
 	},
 
+	// -------------------- //
+	// Publication related //
+	// ------------------ //
+	publications: {
+		/**
+		 * Fetch all publications. Returns a promise that resolves with results or rejects with error.
+		 * @returns {Promise}
+		 */
+		get: function() {
+			return asyncQuery("SELECT * FROM publications");
+		}
+	},
+
 	// -------------------------- //
 	// Generation-only functions //
 	// ------------------------ //

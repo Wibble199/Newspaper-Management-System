@@ -146,6 +146,16 @@ module.exports = function(app) {
 		);
 	}));
 
+	// ----------------------- //
+	// PUBLICATION END POINTS //
+	// --------------------- //
+	app.get("/publications", (req, res) => {
+		db.publications.get().then(
+			results => res.json({success: true, results}),
+			err => res.json({success: false, err})
+		);
+	});
+
 	// --------------------------- //
 	// GENERATING-ONLY END POINTS //
 	// ------------------------- //
