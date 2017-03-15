@@ -169,8 +169,8 @@ var vm = new Vue({
 					url: "/suspensions/" + suspensionId,
 					method: "PUT",
 					data: $.param({
-						start_date: targetLi.find('[name="suspension-start-date"]').datepicker('getDate').toISOString(),
-						end_date: targetLi.find('[name="suspension-end-date"]').datepicker('getDate').toISOString()
+						start_date: targetLi.find('[name="suspension-start-date"]').datepicker('getDate').toYYYYMMDD("-"),
+						end_date: targetLi.find('[name="suspension-end-date"]').datepicker('getDate').toYYYYMMDD("-")
 					})
 				}).then(function(d) {
 					if (d.success) {
@@ -262,9 +262,9 @@ function getSubscriptionFormVal() {
 	var model = {};
 
 	model.publication_id = $('[data-subscription-binding="publication_id"]').val();
-	model.start_date = $('[data-subscription-binding="start_date"]').datepicker("getDate").toISOString();
+	model.start_date = $('[data-subscription-binding="start_date"]').datepicker("getDate").toYYYYMMDD("-");
 	if (!vm.$data.endDateDisabled)
-		model.end_date = $('[data-subscription-binding="end_date"]').datepicker("getDate").toISOString();
+		model.end_date = $('[data-subscription-binding="end_date"]').datepicker("getDate").toYYYYMMDD("-");
 	model.delivery_days = deliveryDaysGet();
 
 	return model;

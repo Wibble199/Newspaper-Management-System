@@ -22,3 +22,12 @@ function ajax(options) {
 		return this;
 	}
 })(jQuery);
+
+Date.prototype.toYYYYMMDD = function(separator) {
+	var m = this.getMonth() + 1, d = this.getDate();
+	return [
+		this.getFullYear(),
+		(m < 10 ? "0" : "") + m,
+		(d < 10 ? "0" : "") + d
+	].join(separator);
+}
