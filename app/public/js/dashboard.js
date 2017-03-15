@@ -1,3 +1,9 @@
+// ------------------- //
+// Google Maps loader //
+// ----------------- //
+var gmapsApiLoad;
+var googleMapsPromise = new Promise(function(resolve, reject) { gmapsApiLoad = resolve; });
+
 // ----------------------- //
 // Main data store (Vuex) //
 // --------------------- //
@@ -47,7 +53,18 @@ var Overview = {
 var Routes = {
 	template: '#route-view-driver-routes',
 	data: function() { return {
-	}}
+		map: null
+	}},
+
+	mounted: function() {		
+		googleMapsPromise.then(function() {
+			this.map = new google.maps.Map($('#route-map').get(0), {
+				center: {lat: 53.568731, lng: -2.885006},
+				zoom: 13,
+				disableDefaultUI: true
+			});
+		});
+	}
 };
 
 var Customers = {
