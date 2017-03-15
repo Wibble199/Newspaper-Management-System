@@ -1,7 +1,7 @@
 const request = require('request');
 const googleAPIKey = require('../serversettings.json').googleapikey;
 
-module.exports = {
+var pathfinder = module.exports = {
 
 	/**
 	 * Attempts to lookup an address and convert it to latitude, longitude using the Google Geocoding API.
@@ -55,5 +55,47 @@ module.exports = {
 					reject(err);
 			});
 		});
+	},
+
+	/**
+	 * Given location, start point and a number of drivers, will attempt to return a route for each driver.
+	 * Will return a Promise that on success resolve to an array containing navigation results for each driver. (Driver 1's navigation is in results[0])
+	 * @param {Object} start Lat/lng object representing start location
+	 * @param {Object[]} locations An array of locations (which will be geocoded)
+	 * @param {number} numDrivers The amount of drivers on the delivery
+	 * @return {Promise}
+	 */
+	calculateRoute: function(start, locations, numDrivers) {
+		return Promise.all(locations.map(pathfinder.geocode)).then(
+			geolocs => pathfinder.calculateRouteDrivers(geolocs, {lat: 0, lng: 0}, 2)
+		).then(
+			drivers => Promise.all(drivers.map(locations => pathfinder.navigate(start, start, locations)))
+		);
+	},
+
+	/**
+	 * Takes an array of locations (lat/lng objects) and a number of drivers and splits those locations up based on their angle from the start location.
+	 * Returns an array containing an array of locations for each driver.
+	 * @param {Object[]} locations An array of lat/lng objects representing destinations
+	 * @param {Object} startLocation A lat/lng object representing the start point of the route
+	 * @param {number} numDrivers The number of drivers that will be helping with this delivery
+	 * @return {Object[][]}
+	 */
+	calculateRouteDrivers: function(locations, startLocation, numDrivers) {
+		locations = locations.map((latlng, i) => {
+			return {
+				index: i, // Original index in the array
+				lat: latlng.lat,
+				lng: latlng.lng,
+				ang: Math.atan2(latlng.lat - startLocation.lat, latlng.lng - startLocation.lng)
+			};
+		}).sort((a, b) => a.ang - b.ang);
+
+		var driverArr = [];
+		var perDriver = Math.floor(locations.length / numDrivers),extraLocs = locations.length % numDrivers;
+		for (var i = 0; i < numDrivers; i++)
+			driverArr.push(locations.splice(0, (i < extraLocs ? 1 : 0) + perDriver));
+		
+		return driverArr;
 	}
 };
