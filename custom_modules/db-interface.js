@@ -59,9 +59,25 @@ module.exports = {
 
 			password = bcrypt.hashSync(password, 10); // Hash the PW
 
-			return asyncQuery("UPDATE customers SET password = ? WHERE customers.id = ?", [password, id]).done(results => {
+			return asyncQuery("UPDATE customers SET password = ? WHERE customers.id = ?", [password, id]).then(results => {
 				if (results.affectedRows != 1)
 					throw new Error("No user found with id " + id);
+			});
+		}
+	},
+
+	// ----------------- //
+	// Customer related //
+	// --------------- //
+	customers: {
+		/**
+		 * Fetch all customers.
+		 * @returns {Promise}
+		 */
+		get: function() {
+			return asyncQuery("SELECT * FROM customers").then(results => {
+				results.forEach(customer => delete customer.password); // Remove the passwords
+				return results;
 			});
 		}
 	},
@@ -98,6 +114,15 @@ module.exports = {
 		 */
 		getByUserId: function(id) {
 			return asyncQuery("SELECT s.*, p.name, DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date, DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id]);
+		},
+
+		/**
+		 * Fetch the subscriptions for a particular customer, but will only return unique publications. 
+		 * @param {number} id The ID of the user to fetch the subscriptions for
+		 * @returns {Promise}
+		 */
+		getByUserIdUnique: function(id) {
+			return asyncQuery("SELECT p.id as id, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id]);
 		},
 
 		/**
@@ -274,6 +299,19 @@ module.exports = {
 				if (results.affectedRows != 1) // If any less than 1 row was affected, the operation was unsuccessful
 					throw new ValidationError("Failed to delete row with given ID");
 			});
+		}
+	},
+
+	// -------------------- //
+	// Publication related //
+	// ------------------ //
+	publications: {
+		/**
+		 * Fetch all publications. Returns a promise that resolves with results or rejects with error.
+		 * @returns {Promise}
+		 */
+		get: function() {
+			return asyncQuery("SELECT * FROM publications");
 		}
 	},
 
