@@ -186,7 +186,7 @@ module.exports = function(app) {
 			results[0].forEach(el => events.push({
 				name: el.name,
 				startdate: el.date,
-				color: "#FFB128" // ToDo: Currently uses a fixed color
+				color: "#" + el.color
 			}));
 
 			// Currently it will return all suspensions for a user, not just the ones in the given month, but there

@@ -5,13 +5,341 @@
 	<link rel="stylesheet" href="/css/bootstrap.min.css" />
 	<link rel="stylesheet" href="/css/bootstrap-datepicker.standalone.min.css" />
 	<link rel="stylesheet" href="/css/monthly.min.css" />
+	<link rel="stylesheet" href="/css/shared.css" />
 	<link rel="stylesheet" href="/css/dashboard.css" />
 </head>
 <body>
 	<div id="app"> <!-- Vue model holder -->
-		
+		<!-- Top nav bar -->
+		<nav class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="javascript:void(0)">Ormskirk Newspapers</a>
+				</div>
+				<div id="navbar" class="navbar-collapse collapse">
+					<ul class="nav navbar-nav navbar-right"> <!-- Right hand navbar -->
+						<li><a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">{{user.email}} <span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href="javascript:void(0)">Change password</a></li>
+								<li><a href="/logout">Logout</a></li>
+							</ul>
+						</li>
+				</div>
+			</div>
+		</nav>
+
+		<!-- Main container -->
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-3" style="height:100%">&nbsp;</div>
+
+				<div class="col-md-9">
+					<router-view></router-view>
+				</div>
+			</div>
+
+			<div class="sticky-nav col-md-3">
+				<h1>Navigation</h1>
+
+				<div class="list-group">
+					<router-link to="/overview" class="list-group-item">Overview</router-link>
+					<router-link to="/routes" class="list-group-item">Routes</router-link>
+					<router-link to="/customers" class="list-group-item">Customers</router-link>
+					<router-link to="/publications" class="list-group-item">Publications</router-link>
+					<router-link to="/metrics" class="list-group-item">Metrics</router-link>
+				</div>
+			</div>
+		</div>
 	</div>
-	
+
+	<!-- ################## -->
+	<!-- APP VIEW TEMPLATES -->
+	<!-- ################## -->
+
+	<!-- Overview -->
+	<script id="route-view-overview" type="text/template">
+	<div> <!-- <= Views must have a single root node -->
+		<div class="page-header">
+			<h1>Overview <small>A glace at this week</small></h1>
+		</div>
+
+		<!-- Row 2 -->
+		<div class="row">
+			<div class="col-md-8">
+				<div class="panel panel-success">
+					<div class="panel-heading">Publications required today</div>
+					<table class="table table-condensed table-striped">
+						<thead>
+							<tr>
+								<th>Publication</th>
+								<th>Driver 1</th>
+								<th>Driver 2</th>
+								<th>Total</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>The Ormskirk Herald</td>
+								<td>4</td>
+								<td>12</td>
+								<td><strong>16</strong></td>
+							</tr>
+							<tr>
+								<td>Farmer's Weekly</td>
+								<td>5</td>
+								<td>1</td>
+								<td><strong>6</strong></td>
+							</tr>
+							<tr>
+								<td>The Independant</td>
+								<td>7</td>
+								<td>8</td>
+								<td><strong>15</strong></td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<th>Total</th>
+								<th>16</th>
+								<th>21</th>
+								<th>37</th>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+			</div>
+
+			<div class="col-md-4">
+				<div class="panel panel-success">
+					<div class="panel-heading">Actions</div>
+					<div class="panel-body">
+						<router-link to="/routes" class="btn btn-block btn-success">View driver routes</router-link>
+						<a href="#" class="btn btn-block btn-success">Lorem Ipsum</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Row 3 -->
+		<div class="row">
+			<div class="col-md-4">
+				<div class="panel panel-info">
+					<div class="panel-heading">Weekly subscriptions by day</div>
+					<div class="panel-body">
+						Panel content
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-4">
+				<div class="panel panel-info">
+					<div class="panel-heading">Weekly subscriptions by publication</div>
+					<div class="panel-body">
+						Panel content
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-4">
+				<div class="panel panel-info">
+					<div class="panel-heading">Charts are cool</div>
+					<div class="panel-body">
+						:D
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</script>
+
+	<!-- Driver routes -->
+	<script id="route-view-driver-routes" type="text/template">
+	<div>
+		<div class="page-header">
+			<h1>Routes <small>Today's delivery plan</small></h1>
+		</div>
+
+		<ul class="tab-navigation">
+			<router-link to="/routes/1" class="tab">Driver 1</router-link>
+			<router-link to="/routes/2" class="tab">Driver 2</router-link>
+		</ul>
+
+		<div class="row">
+			<div class="col-md-6">
+				Table with publications for driver {{$route.params.driver}}
+
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Address</th>
+							<th>Publications</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+								<address>
+								Twitter, Inc.<br>
+								1355 Market Street,<br>
+								Suite 900<br>
+								San Francisco,<br>
+								CA 94103
+								</address>
+							</td>
+							<td>
+								<ul>
+									<li>Hellooooo</li>
+									<li>Shurup an' keep peddlin'</li>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<address>
+								Twitter, Inc.<br>
+								1355 Market Street,<br>
+								Suite 900<br>
+								San Francisco,<br>
+								CA 94103
+								</address>
+							</td>
+							<td>
+								<ul>
+									<li>Hellooooo</li>
+									<li>Shurup an' keep peddlin'</li>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="col-md-6">
+				<div class="panel panel-success">
+					<div class="panel-heading">Map</div>
+					<div class="panel-body">
+						<div id="route-map" style="width:100%;height:300px"></div>
+						
+						<p>Map instructions go here</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</script>
+
+	<!-- Customers -->
+	<script id="route-view-customers" type="text/template">
+	<div>
+		<div class="page-header">
+			<h1>Customers<!-- <small>A glace at this week</small>--></h1>
+		</div>
+
+		<div class="row">
+			<div class="col-md-8">
+				<div class="input-group">
+					<span class="input-group-addon "><span class="glyphicon glyphicon-user"></span></span>
+					<input type="text" class="form-control" placeholder="Name or email" v-model="searchText">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" v-on:click.prevent="searchText=''"><span class="glyphicon glyphicon-remove"></button>
+					</span>
+				</div>
+
+				<table class="table table-hover" style="margin-top:16px">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Name</th>
+							<th>Address</th>
+							<th>Post Code</th>
+						</tr>
+						<tr class="warning" v-if="searchText">
+							<td colspan="4"><span class="glyphicon glyphicon-exclamation-sign"></span> List is currently filtered</td>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="cust in filteredCustomers" v-on:click.prevent="selectCustomer" v-bind:class="{info: selectedCustomerId == cust.id}" v-bind:data-customer-id="cust.id">
+							<td>{{cust.id}}</td>
+							<td>{{cust.name}}</td>
+							<td>{{cust.address1}}</td>
+							<td>{{cust.postcode}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="col-md-4">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						{{selectedCustomer ? selectedCustomer.name : "Select a customer"}}
+						<!--<a href="#" class="btn btn-xs btn-default pull-right"><span class="glyphicon glyphicon-pencil"></span></a>-->
+					</div>
+					<div class="panel-body">
+						<div class="row" v-if="selectedCustomer">
+							<div class="col-md-4"><strong>Address:</strong></div>
+							<address class="col-md-8">
+								{{selectedCustomer.address1}}<br>
+								{{selectedCustomer.address2}}<br>
+								{{selectedCustomer.address3 || "-"}}<br>
+								{{selectedCustomer.address4 || "-"}}<br>
+								{{selectedCustomer.postcode}}<br>
+							</address>
+						</div>
+						<div class="row" v-if="selectedCustomer">
+							<div class="col-md-4"><strong>Contact:</strong></div>
+							<div class="col-md-8">
+								{{selectedCustomer.email}}<br>
+								{{selectedCustomer.contact_num || "Phone not provided"}}<br>
+							</div>
+						</div>
+						<span v-else>Select a customer from the left to view their details.</span>
+					</div>
+
+					<table id="customer-subs-table" class="table table-condensed table-striped" v-if="selectedCustomer">
+						<thead>
+							<tr><th>{{selectedCustomer.name.split(" ")[0]}}'s subscriptions</th></tr>
+						</thead>
+						<tbody>
+							<tr v-for="sub in selectedCustomer.subs"><td>{{sub}}</td></tr>
+							<tr class="info" v-if="selectedCustomer.subs === null"><td>Loading...</td></tr>
+							<tr class="warning" v-else-if="selectedCustomer.subs.length == 0"><td>No subscriptions</td></tr>
+						</tbody>
+					</table>
+				</div>
+
+				<!--<div class="alert alert-warning" v-if="selectedCustomer"> <strong>{{selectedCustomer.name.split(" ")[0]}} has currently suspended their subscriptions.</strong> They are due to be unsuspended 7th May 2017.</div>-->
+				<!--<div class="alert alert-danger" v-if="selectedCustomer"> <strong>John has missed 1 delivery recently.</div>-->
+			</div>
+		</div>
+	</div>
+	</script>
+
+	<!-- Publications -->
+	<script id="route-view-publications" type="text/template">
+	<div>
+		<div class="page-header">
+			<h1>Publications<!-- <small>A glace at this week</small>--></h1>
+		</div>
+
+		<p>Not currently implemented.</p>
+	</div>
+	</script>
+
+	<!-- Metrics -->
+	<script id="route-view-metrics" type="text/template">
+	<div>
+		<div class="page-header">
+			<h1>Metrics<!-- <small>A glace at this week</small>--></h1>
+		</div>
+
+		<p>Not currently implemented.</p>
+	</div>
+	</script>
+
 
 	<script src="/js/promise.min.js"></script>
 	<script src="/js/jquery.min.js"></script>
@@ -19,6 +347,10 @@
 	<script src="/js/bootstrap-datepicker.min.js"></script>
 	<script src="/js/monthly.js"></script>
 	<script src="/js/vue.min.js"></script>
+	<script src="/js/vuex.min.js"></script>
+	<script src="/js/vue-router.min.js"></script>
+	<script src="/js/shared.js"></script>
 	<script src="/js/dashboard.js"></script>
+	<script async defer src="/googlemapsapi?cb=gmapsApiLoad"></script>
 </body>
 </html>

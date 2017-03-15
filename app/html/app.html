@@ -5,6 +5,7 @@
 	<link rel="stylesheet" href="/css/bootstrap.min.css" />
 	<link rel="stylesheet" href="/css/bootstrap-datepicker.standalone.min.css" />
 	<link rel="stylesheet" href="/css/monthly.min.css" />
+	<link rel="stylesheet" href="/css/shared.css" />
 	<link rel="stylesheet" href="/css/app.css" />
 </head>
 <body>
@@ -34,7 +35,7 @@
 		</nav>
 
 		<!-- Main container -->
-		<div id="app" class="container-fluid">
+		<div class="container-fluid">
 
 			<!-- Alert container -->
 			<div class="row">
@@ -62,7 +63,7 @@
 						<div class="panel-body">
 							<ul id="subscription-list" class="list-group">
 								<li class="list-group-item" v-for="sub in subscriptions" v-bind:data-subscription-id="sub.id">
-									<h4 class="list-group-item-heading">{{sub.name}}</h4>
+									<h4 class="list-group-item-heading"><div class="subscription-legend-dot" v-bind:style="{'background-color': '#' + sub.color}"></div> {{sub.name}}</h4>
     								<p class="list-group-item-text" v-html="getDayString(sub.delivery_days)"></p>
 
 									<div class="btn-group btn-group-xs edit-delete-group">
@@ -174,6 +175,7 @@
 	<script src="/js/bootstrap-datepicker.min.js"></script>
 	<script src="/js/monthly.js"></script>
 	<script src="/js/vue.min.js"></script>
+	<script src="/js/shared.js"></script>
 	<script src="/js/app.js"></script>
 </body>
 </html>

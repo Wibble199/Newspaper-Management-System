@@ -1,0 +1,42 @@
+.sticky-nav {
+	position: fixed;
+	top: 66px;
+	padding-left: 0;
+}
+
+.page-header {
+	margin-top: 0;
+}
+
+tfoot {
+	border-top: 2px solid #DDD;
+}
+
+.tab-navigation {
+	border-bottom: 1px solid #ddd;
+    padding-left: 0;
+	padding-bottom: 10px;
+    list-style: none;
+}
+
+.tab-navigation .tab {
+	border: 1px solid #DDD;
+	padding: 12px;
+	text-decoration: none;
+	border-radius: 6px 6px 0 0;
+}
+
+.tab-navigation .tab.active {
+	border-bottom-color: #FFF;
+	color: #333;
+}
+
+.tab-navigation .tab:not(.active):hover {
+	background-color: #EEE;
+}
+
+.panel-heading .btn.btn-xs {
+	position: relative;
+    top: -1px;
+    right: -5px;
+}
