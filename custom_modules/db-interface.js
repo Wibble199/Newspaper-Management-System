@@ -117,6 +117,15 @@ module.exports = {
 		},
 
 		/**
+		 * Fetch the subscriptions for a particular customer, but will only return unique publications. 
+		 * @param {number} id The ID of the user to fetch the subscriptions for
+		 * @returns {Promise}
+		 */
+		getByUserIdUnique: function(id) {
+			return asyncQuery("SELECT p.id as id, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id]);
+		},
+
+		/**
 		 * Attempts to add a subscription to the system.
 		 * Returns Promise that will reject on failure (ValidationError [If data wrong] or Error [If SQL failed]) or resolve with the newly inserted ID on success.
 		 * @param {object} data The additional data for the subscription (customer_id, publication_id, start_date, end_date, delivery_days)

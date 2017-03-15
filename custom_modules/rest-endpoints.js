@@ -27,6 +27,20 @@ module.exports = function(app) {
 		);
 	}));
 
+	app.get("/customers/:id/subscriptions", requireAdmin((req, res) => {
+		db.subscriptions.getByUserId(req.params.id).then(
+			results => res.json({success: true, results}),
+			err => res.json({success: false, err})
+		);
+	}));
+
+	app.get("/customers/:id/subscriptions/unique", requireAdmin((req, res) => {
+		db.subscriptions.getByUserIdUnique(req.params.id).then(
+			results => res.json({success: true, results}),
+			err => res.json({success: false, err})
+		);
+	}));
+
 	// ----------------------------- //
 	// USER SUBSCRIPTION END POINTS //
 	// --------------------------- //
