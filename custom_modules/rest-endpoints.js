@@ -17,6 +17,16 @@ module.exports = function(app) {
 		);
 	}));
 
+	// ------------------------------- //
+	// CUSTOMER MANAGEMENT END POINTS //
+	// ----------------------------- //
+	app.get("/customers", requireAdmin((req, res) => {
+		db.customers.get().then(
+			results => res.json({success: true, results}),
+			err => res.json({success: false, err})
+		);
+	}));
+
 	// ----------------------------- //
 	// USER SUBSCRIPTION END POINTS //
 	// --------------------------- //
@@ -140,10 +150,10 @@ module.exports = function(app) {
 	// GENERATING-ONLY END POINTS //
 	// ------------------------- //
 	// Fetch the details from the calendar for a given month
-	app.get('/calendar/:year/:month', (req, res) => {
+	app.get('/calendar/:year/:month', requireAuth((req, res) => {
 		Promise.all([
-			db.generate.calendarEvents(1, req.params.year, req.params.month),
-			db.suspensions.getByUserId(1)
+			db.generate.calendarEvents(req.user.id, req.params.year, req.params.month),
+			db.suspensions.getByUserId(req.user.id)
 
 		]).then(results => {
 			var events = [];
@@ -169,8 +179,8 @@ module.exports = function(app) {
 
 		}).catch(
 			err => res.json({success: false, err})
-		)
-	})
+		);
+	}));
 };
 
 /**

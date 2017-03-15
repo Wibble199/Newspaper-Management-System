@@ -59,9 +59,25 @@ module.exports = {
 
 			password = bcrypt.hashSync(password, 10); // Hash the PW
 
-			return asyncQuery("UPDATE customers SET password = ? WHERE customers.id = ?", [password, id]).done(results => {
+			return asyncQuery("UPDATE customers SET password = ? WHERE customers.id = ?", [password, id]).then(results => {
 				if (results.affectedRows != 1)
 					throw new Error("No user found with id " + id);
+			});
+		}
+	},
+
+	// ----------------- //
+	// Customer related //
+	// --------------- //
+	customers: {
+		/**
+		 * Fetch all customers.
+		 * @returns {Promise}
+		 */
+		get: function() {
+			return asyncQuery("SELECT * FROM customers").then(results => {
+				results.forEach(customer => delete customer.password); // Remove the passwords
+				return results;
 			});
 		}
 	},
