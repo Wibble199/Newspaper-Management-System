@@ -14,3 +14,13 @@
 s {
 	opacity: 0.5;
 }
+
+.subscription-legend-dot {
+    position: relative;
+    display: inline-block;
+    top: 2px;
+    height: 1em; width: 1em;
+
+    border-radius: 50%;
+    border: 1px solid #333;
+}

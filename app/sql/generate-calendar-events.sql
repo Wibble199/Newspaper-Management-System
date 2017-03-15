@@ -1,5 +1,5 @@
 ## Query to select all days (and their day of week number) in the given month and year ignoring any dates that are inside a suspension
-SELECT dim.date, pub.name
+SELECT dim.date, pub.name, pub.color
 	# CREATE AN INTERMEDIARY TABLE CONTAINING ALL DAYS IN THE GIVEN MONTH
 	FROM ( # This bit selects 39 days in the future from the first day of the current month. Adapted from http://stackoverflow.com/a/15224720/1305670
 		SELECT CONCAT(::year, '-', ::month, '-01') + INTERVAL (a.a + (10 * b.a)) DAY AS date

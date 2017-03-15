@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Mar 09, 2017 at 09:56 PM
+-- Generation Time: Mar 15, 2017 at 09:22 AM
 -- Server version: 5.6.29
 -- PHP Version: 7.0.5
 
@@ -42,7 +42,8 @@ CREATE TABLE `customers` (
 
 CREATE TABLE `publications` (
   `id` int(11) UNSIGNED NOT NULL,
-  `name` varchar(32) NOT NULL
+  `name` varchar(32) NOT NULL,
+  `color` varchar(6) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------

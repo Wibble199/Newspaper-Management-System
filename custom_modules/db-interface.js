@@ -75,7 +75,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		get: function() {
-			return asyncQuery("SELECT s.*, p.name, DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date, DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id");
+			return asyncQuery("SELECT s.*, p.name, p.color FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id");
 		},
 
 		/**
@@ -84,7 +84,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		getById: function(id) {
-			return asyncQuery("SELECT s.*, p.name, DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date, DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.id = ?", [id]).then(results => {
+			return asyncQuery("SELECT s.*, p.name, p.color FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.id = ?", [id]).then(results => {
 				if (results.length != 1)
 					throw new Error("No subscription found with that ID");
 				return results[0];
@@ -97,7 +97,7 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		getByUserId: function(id) {
-			return asyncQuery("SELECT s.*, p.name, DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date, DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id]);
+			return asyncQuery("SELECT s.*, p.name, p.color FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id]);
 		},
 
 		/**

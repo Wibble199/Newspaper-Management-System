@@ -63,7 +63,7 @@
 						<div class="panel-body">
 							<ul id="subscription-list" class="list-group">
 								<li class="list-group-item" v-for="sub in subscriptions" v-bind:data-subscription-id="sub.id">
-									<h4 class="list-group-item-heading">{{sub.name}}</h4>
+									<h4 class="list-group-item-heading"><div class="subscription-legend-dot" v-bind:style="{'background-color': '#' + sub.color}"></div> {{sub.name}}</h4>
     								<p class="list-group-item-text" v-html="getDayString(sub.delivery_days)"></p>
 
 									<div class="btn-group btn-group-xs edit-delete-group">
