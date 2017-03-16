@@ -54,7 +54,8 @@ var Overview = {
 var Routes = {
 	template: '#route-view-driver-routes',
 	data: function() { return {
-		directionsServiceResults: null
+		directionsServiceResults: null,
+		driverRoutes: null
 	}},
 
 	watch: {
@@ -64,24 +65,35 @@ var Routes = {
 	},
 
 	mounted: function() {
-		thisVue = this;
+		this.initialiseMap();
+	},
 
-		googleMapsPromise.then(function() {
-			map = new google.maps.Map($('#route-map').get(0), {
-				center: {lat: 53.568731, lng: -2.885006},
-				zoom: 13,
-				disableDefaultUI: true
+	methods: {
+		initialiseMap: function() {
+			var thisVue = this;
+			googleMapsPromise.then(function() {
+				map = new google.maps.Map($('#route-map').get(0), {
+					center: {lat: 53.568731, lng: -2.885006},
+					zoom: 13,
+					disableDefaultUI: true
+				});
+
+				directionsService = new google.maps.DirectionsService();
+				directionsRenderer = new google.maps.DirectionsRenderer();
+				directionsRenderer.setMap(map);
+
+				thisVue.requestDirectionData();
 			});
+		},
 
-			directionsService = new google.maps.DirectionsService();
-			directionsRenderer = new google.maps.DirectionsRenderer();
-			directionsRenderer.setMap(map);
-
+		requestDirectionData: function() {
+			var thisVue = this;
+			var loadingOverlayTarget = $('#route-view-inner-container').loadingOverlay(true);
 			var start = {lat: 53.562447, lng: -2.885611};
 
-			$('#route-view-inner-container').loadingOverlay(true);
-			
 			ajax("/test").then(function(data) {
+
+				// For each driver, calculate a route with their waypoints
 				var promises = [];
 				for (var i = 0; i < data.results.length; i++) {
 					promises.push(new Promise(function(resolve, reject) {
@@ -97,19 +109,17 @@ var Routes = {
 						});
 					}));
 				}
-
-				return Promise.all(promises);
+				return Promise.all(promises); // Return a Promise that will resolve when all driver's routes have been fetched
 
 			}).then(function(responses) {
+				console.log(responses);
 				thisVue.directionsServiceResults = responses;
 				thisVue.setMapDirections(0);
 
-				$('#route-view-inner-container').loadingOverlay(false);
+				loadingOverlayTarget.loadingOverlay(false);
 			});
-		});
-	},
+		},
 
-	methods: {
 		setMapDirections: function(driverIndex) {
 			directionsRenderer.setDirections(this.directionsServiceResults[driverIndex]);
 		}	
