@@ -57,7 +57,15 @@ var Routes = {
 		directionsServiceResults: null
 	}},
 
-	mounted: function() {		
+	watch: {
+		'$route': function() { // Triggers when the route has a parameter change (I.E. when the driver is changed) but not when the route is changed to a different component.
+			this.setMapDirections(this.$route.params.driver - 1);
+		}
+	},
+
+	mounted: function() {
+		thisVue = this;
+
 		googleMapsPromise.then(function() {
 			map = new google.maps.Map($('#route-map').get(0), {
 				center: {lat: 53.568731, lng: -2.885006},
@@ -70,6 +78,8 @@ var Routes = {
 			directionsRenderer.setMap(map);
 
 			var start = {lat: 53.562447, lng: -2.885611};
+
+			$('#route-view-inner-container').loadingOverlay(true);
 			
 			ajax("/test").then(function(data) {
 				var promises = [];
@@ -91,10 +101,18 @@ var Routes = {
 				return Promise.all(promises);
 
 			}).then(function(responses) {
-				this.directionsServiceResults = responses;
-				directionsRenderer.setDirections(responses[0]);
+				thisVue.directionsServiceResults = responses;
+				thisVue.setMapDirections(0);
+
+				$('#route-view-inner-container').loadingOverlay(false);
 			});
 		});
+	},
+
+	methods: {
+		setMapDirections: function(driverIndex) {
+			directionsRenderer.setDirections(this.directionsServiceResults[driverIndex]);
+		}	
 	}
 };
 
