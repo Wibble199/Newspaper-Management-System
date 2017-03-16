@@ -60,7 +60,7 @@ var Routes = {
 
 	watch: {
 		'$route': function() { // Triggers when the route has a parameter change (I.E. when the driver is changed) but not when the route is changed to a different component.
-			this.setMapDirections(this.$route.params.driver - 1);
+			this.setMapDirections();
 		}
 	},
 
@@ -114,14 +114,14 @@ var Routes = {
 			}).then(function(responses) {
 				console.log(responses);
 				thisVue.directionsServiceResults = responses;
-				thisVue.setMapDirections(0);
+				thisVue.setMapDirections();
 
 				loadingOverlayTarget.loadingOverlay(false);
 			});
 		},
 
-		setMapDirections: function(driverIndex) {
-			directionsRenderer.setDirections(this.directionsServiceResults[driverIndex]);
+		setMapDirections: function() {
+			directionsRenderer.setDirections(this.directionsServiceResults[this.$route.params.driver - 1]);
 		}	
 	}
 };
