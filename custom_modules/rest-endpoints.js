@@ -1,4 +1,5 @@
 const db = require('./db-interface');
+const pathfinder = require('./pathfinder');
 
 module.exports = function(app) {
 	// ------------------------ //
@@ -205,6 +206,23 @@ module.exports = function(app) {
 			err => res.json({success: false, err})
 		);
 	}));
+
+
+
+	app.get("/test", (req, res) => {
+		db.customers.get().then(results => pathfinder.calculateRoute(
+			{lat: 53.562447, lng: -2.885611},
+			results,
+			3
+		)).then(
+			results => {
+				res.json({success: true, results: results.map(
+					routeList => routeList.map(node => { return { location: node.lat + "," + node.lng, stopover: true }}) // Convert into a format for the Google Maps Directions Service
+				)});
+			},
+			err => res.json({success: false, err})
+		);
+	});
 };
 
 /**

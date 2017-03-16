@@ -35,41 +35,16 @@ var pathfinder = module.exports = {
 	},
 
 	/**
-	 * Attempts to create a journey between two points, optionally stopping at waypoints on the way.
-	 * Returns a Promise that will resolve with Google Maps response (https://developers.google.com/maps/documentation/directions/intro#DirectionsResponses) or reject with an error.
-	 * @param {string} start The starting point for the navigation
-	 * @param {string} end The ending point for the navigation
-	 * @param {string[]} waypoints The waypoints to stop at on the journey between start and end
-	 * @returns {Promise}
-	 */
-	navigate: function(start, end, waypoints) {
-		return new Promise(function(resolve, reject) {
-			// Generate `|` delimited waypoint string
-			var wp = (waypoints && waypoints.length > 0) ? ("&waypoints=" + waypoints.map(encodeURIComponent).join("|")) : "";
-
-			// Make request
-			request.get(`https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(start)}&destination=${encodeURIComponent(end)}${wp}&key=`, (err, res, body) => {
-				if (!err && res.statusCode == 200)
-					resolve(JSON.parse(body));
-				else
-					reject(err);
-			});
-		});
-	},
-
-	/**
 	 * Given location, start point and a number of drivers, will attempt to return a route for each driver.
-	 * Will return a Promise that on success resolve to an array containing navigation results for each driver. (Driver 1's navigation is in results[0])
+	 * Will return a Promise that on success resolve to an array containing navigation waypoints for each driver. (Driver 1's navigation is in results[0])
 	 * @param {Object} start Lat/lng object representing start location
 	 * @param {Object[]} locations An array of locations (which will be geocoded)
 	 * @param {number} numDrivers The amount of drivers on the delivery
 	 * @return {Promise}
 	 */
 	calculateRoute: function(start, locations, numDrivers) {
-		return Promise.all(locations.map(pathfinder.geocode)).then(
-			geolocs => pathfinder.calculateRouteDrivers(geolocs, {lat: 0, lng: 0}, 2)
-		).then(
-			drivers => Promise.all(drivers.map(locations => pathfinder.navigate(start, start, locations)))
+		return Promise.all(locations.filter(el => el.id != 12 /*Filter out admin*/).map(pathfinder.geocode)).then(
+			geolocs => pathfinder.calculateRouteDrivers(geolocs, start, 2)
 		);
 	},
 

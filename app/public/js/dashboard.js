@@ -3,6 +3,7 @@
 // ----------------- //
 var gmapsApiLoad;
 var googleMapsPromise = new Promise(function(resolve, reject) { gmapsApiLoad = resolve; });
+var map, directionsService, directionsRenderer;
 
 // ----------------------- //
 // Main data store (Vuex) //
@@ -53,15 +54,45 @@ var Overview = {
 var Routes = {
 	template: '#route-view-driver-routes',
 	data: function() { return {
-		map: null
+		directionsServiceResults: null
 	}},
 
 	mounted: function() {		
 		googleMapsPromise.then(function() {
-			this.map = new google.maps.Map($('#route-map').get(0), {
+			map = new google.maps.Map($('#route-map').get(0), {
 				center: {lat: 53.568731, lng: -2.885006},
 				zoom: 13,
 				disableDefaultUI: true
+			});
+
+			directionsService = new google.maps.DirectionsService();
+			directionsRenderer = new google.maps.DirectionsRenderer();
+			directionsRenderer.setMap(map);
+
+			var start = {lat: 53.562447, lng: -2.885611};
+			
+			ajax("/test").then(function(data) {
+				var promises = [];
+				for (var i = 0; i < data.results.length; i++) {
+					promises.push(new Promise(function(resolve, reject) {
+						directionsService.route({
+							origin: start,
+							destination: start,
+							travelMode: "DRIVING",
+							waypoints: data.results[i],
+							optimizeWaypoints: true
+						}, function(response, status) {
+							if (status == "OK") resolve(response);
+							else reject(status);
+						});
+					}));
+				}
+
+				return Promise.all(promises);
+
+			}).then(function(responses) {
+				this.directionsServiceResults = responses;
+				directionsRenderer.setDirections(responses[0]);
 			});
 		});
 	}
