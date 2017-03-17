@@ -207,18 +207,17 @@ module.exports = function(app) {
 		);
 	}));
 
-
-
-	app.get("/test", (req, res) => {
-		db.generate.deliveryListGrouped("2017-03-17").then(results => pathfinder.calculateRoute(
+	// Fetches the deliveries required for a particular day
+	app.get("/deliverylist/:day", requireAdmin((req, res) => {
+		db.generate.deliveryListGrouped(req.params.day).then(results => pathfinder.calculateRoute(
 			{lat: 53.562447, lng: -2.885611},
 			results.filter(el => el.id != 12),
-			3, true
+			2, true
 		)).then(
 			results => res.json({success: true, results}),
 			err => res.json({success: false, err})
 		);
-	});
+	}));
 };
 
 /**

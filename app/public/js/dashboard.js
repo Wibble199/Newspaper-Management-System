@@ -54,9 +54,20 @@ var Overview = {
 var Routes = {
 	template: '#route-view-driver-routes',
 	data: function() { return {
+		deliveryDataRaw: null,
 		directionsServiceResults: null,
 		driverRoutes: null
 	}},
+
+	computed: {
+		currentDeliveryRoute: function() {
+			return this.deliveryDataRaw ? this.deliveryDataRaw[this.$route.params.driver - 1] : null;
+		},
+
+		waypointOrder: function() {
+			return this.directionsServiceResults ? this.directionsServiceResults[this.$route.params.driver - 1].routes[0].waypoint_order : null;
+		}
+	},
 
 	watch: {
 		'$route': function() { // Triggers when the route has a parameter change (I.E. when the driver is changed) but not when the route is changed to a different component.
@@ -90,29 +101,42 @@ var Routes = {
 			var thisVue = this;
 			var loadingOverlayTarget = $('#route-view-inner-container').loadingOverlay(true);
 			var start = {lat: 53.562447, lng: -2.885611};
+			var date = "2017-03-17";
 
-			ajax("/test").then(function(data) {
+			ajax("/deliverylist/" + date).then(function(data) {
+				if (!data.success) return Promise.reject(data.err);
 
 				// For each driver, calculate a route with their waypoints
 				var promises = [];
-				for (var i = 0; i < data.results.length; i++) {
-					promises.push(new Promise(function(resolve, reject) {
+				thisVue.deliveryDataRaw = data.results;
+
+				for (var i = 0; i < data.results.length; i++) { // Loop through all the driver arrays
+					promises.push(new Promise(function(resolve, reject) { // Convert the directionsService calls into Promises
+
+						// Strip out data such as name and get a list of locations for the Google DirectionsService
+						var waypoints = [];
+						for (var j = 0; delivery = data.results[i][j]; j++)
+							waypoints.push({
+								location: delivery.address1 + "," + delivery.postcode,
+								stopover: true
+							});
+
+						// Call the DirectionsService route function to get an optimised route for this driver's deliveries				
 						directionsService.route({
 							origin: start,
 							destination: start,
 							travelMode: "DRIVING",
-							waypoints: data.results[i],
+							waypoints: waypoints,
 							optimizeWaypoints: true
 						}, function(response, status) {
-							if (status == "OK") resolve(response);
-							else reject(status);
+							if (status == "OK") resolve(response); // If all was good, resolve the promise
+							else reject(status); // Else reject it
 						});
 					}));
 				}
 				return Promise.all(promises); // Return a Promise that will resolve when all driver's routes have been fetched
 
 			}).then(function(responses) {
-				console.log(responses);
 				thisVue.directionsServiceResults = responses;
 				thisVue.setMapDirections();
 

@@ -172,8 +172,6 @@
 
 		<div class="row">
 			<div class="col-md-6">
-				Table with publications for driver {{$route.params.driver}}
-
 				<table class="table">
 					<thead>
 						<tr>
@@ -182,43 +180,25 @@
 							<th>Publications</th>
 						</tr>
 					</thead>
-					<tbody>
-						<tr>
+					<tbody v-if="directionsServiceResults">
+						<tr v-for="(routeindex, index) in waypointOrder">
 							<td>
-								<div class="map-marker">B</div>
+								<div class="map-marker">{{"BCDEFGHIJKLMNOPQRSTUVWXYZ".split("")[index]}}</div>
 							</td>
 							<td>
 								<address>
-								Twitter, Inc.<br>
-								1355 Market Street,<br>
-								Suite 900<br>
-								San Francisco,<br>
-								CA 94103
+								{{currentDeliveryRoute[routeindex].name}}
+								{{currentDeliveryRoute[routeindex].address1}}<br>
+								{{currentDeliveryRoute[routeindex].address2}}<br>
+								{{currentDeliveryRoute[routeindex].address3}}<br v-if="currentDeliveryRoute[routeindex].address3">
+								{{currentDeliveryRoute[routeindex].address4}}<br v-if="currentDeliveryRoute[routeindex].address4">
+								{{currentDeliveryRoute[routeindex].postcode}}
 								</address>
 							</td>
 							<td>
 								<ul>
-									<li>Hellooooo</li>
-									<li>Shurup an' keep peddlin'</li>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								<div class="map-marker">C</div>
-							</td>
-							<td>
-								<address>
-								Twitter, Inc.<br>
-								1355 Market Street,<br>
-								Suite 900<br>
-								San Francisco,<br>
-								CA 94103
-								</address>
-							</td>
-							<td>
-								<ul>
-									<li>Hellooooo</li>
-									<li>Shurup an' keep peddlin'</li>
+									<li v-for="pname in currentDeliveryRoute[routeindex].publication_name">{{pname}}</li>
+								</ul>
 							</td>
 						</tr>
 					</tbody>
