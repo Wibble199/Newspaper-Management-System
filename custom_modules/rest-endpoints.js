@@ -210,16 +210,12 @@ module.exports = function(app) {
 
 
 	app.get("/test", (req, res) => {
-		db.customers.get().then(results => pathfinder.calculateRoute(
+		db.generate.deliveryListGrouped("2017-03-17").then(results => pathfinder.calculateRoute(
 			{lat: 53.562447, lng: -2.885611},
-			results,
-			3
+			results.filter(el => el.id != 12),
+			3, true
 		)).then(
-			results => {
-				res.json({success: true, results: results.map(
-					routeList => routeList.map(node => { return { location: node.lat + "," + node.lng, stopover: true }}) // Convert into a format for the Google Maps Directions Service
-				)});
-			},
+			results => res.json({success: true, results}),
 			err => res.json({success: false, err})
 		);
 	});

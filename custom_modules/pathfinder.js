@@ -35,36 +35,42 @@ var pathfinder = module.exports = {
 	},
 
 	/**
-	 * Given location, start point and a number of drivers, will attempt to return a route for each driver.
+	 * Given locations, a start point and a number of drivers, will attempt to create roughly even groups for each driver.
 	 * Will return a Promise that on success resolve to an array containing navigation waypoints for each driver. (Driver 1's navigation is in results[0])
 	 * @param {Object} start Lat/lng object representing start location
 	 * @param {Object[]} locations An array of locations (which will be geocoded)
 	 * @param {number} numDrivers The amount of drivers on the delivery
+	 * @param {boolean} [remapToLocations=false] Whether to resolve to the corresponding `locations` item instead of the index.
 	 * @return {Promise}
 	 */
-	calculateRoute: function(start, locations, numDrivers) {
-		return Promise.all(locations.filter(el => el.id != 12 /*Filter out admin*/).map(pathfinder.geocode)).then(
-			geolocs => pathfinder.calculateRouteDrivers(geolocs, start, 2)
+	calculateRoute: function(start, locations, numDrivers, remapToLocations) {
+		var mainPromise = Promise.all(locations.map(pathfinder.geocode)).then(
+			geolocs => pathfinder.calculateRouteDrivers(geolocs, start, numDrivers)
+		);
+
+		return remapToLocations !== true ? mainPromise : mainPromise.then(
+			outerArray => outerArray.map(
+				innerArray => innerArray.map(ind => locations[ind])
+			)
 		);
 	},
 
 	/**
 	 * Takes an array of locations (lat/lng objects) and a number of drivers and splits those locations up based on their angle from the start location.
-	 * Returns an array containing an array of locations for each driver.
+	 * Returns an array containing the index of the original locations.
 	 * @param {Object[]} locations An array of lat/lng objects representing destinations
 	 * @param {Object} startLocation A lat/lng object representing the start point of the route
 	 * @param {number} numDrivers The number of drivers that will be helping with this delivery
-	 * @return {Object[][]}
+	 * @return {number[][]}
 	 */
 	calculateRouteDrivers: function(locations, startLocation, numDrivers) {
-		locations = locations.map((latlng, i) => {
-			return {
-				index: i, // Original index in the array
-				lat: latlng.lat,
-				lng: latlng.lng,
-				ang: Math.atan2(latlng.lat - startLocation.lat, latlng.lng - startLocation.lng)
-			};
-		}).sort((a, b) => a.ang - b.ang);
+		locations = locations.map((latlng, i) => { return {
+			index: i, // Original index in the array
+			lat: latlng.lat,
+			lng: latlng.lng,
+			ang: Math.atan2(latlng.lat - startLocation.lat, latlng.lng - startLocation.lng)
+		};}).sort((a, b) => a.ang - b.ang)
+		.map(el => el.index);
 
 		var driverArr = [];
 		var perDriver = Math.floor(locations.length / numDrivers),extraLocs = locations.length % numDrivers;
