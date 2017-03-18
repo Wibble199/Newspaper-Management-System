@@ -291,7 +291,7 @@
 							<tr><th>{{selectedCustomer.name.split(" ")[0]}}'s subscriptions</th></tr>
 						</thead>
 						<tbody>
-							<tr v-for="sub in selectedCustomer.subs"><td>{{sub}}</td></tr>
+							<tr v-for="sub in selectedCustomer.subs"><td>{{sub.name}}</td></tr>
 							<tr class="info" v-if="selectedCustomer.subs === null"><td>Loading...</td></tr>
 							<tr class="warning" v-else-if="selectedCustomer.subs.length == 0"><td>No subscriptions</td></tr>
 						</tbody>

@@ -21,23 +21,21 @@ var store = new Vuex.Store({
 
 	actions: {
 		fetchCustomers: function(context) {
-			setInterval(function() { // Async call to server to fetch data
-				context.commit('setCustomers', [{
-					id: 1,
-					name: "John Smith",
-					address1: "Some House",
-					postcode: "AB12 3CD",
-					email: "j.smith@gmail.com",
-					subs: null
-				}]);
-			}, 1500);
+			ajax("/customers").then(data => { // Async call to server to fetch data
+				if (data.success) {
+					for (var i = data.results.length; i--;)
+						data.results[i].subs = null; // Add holder for the user's subscriptions
+					context.commit('setCustomers', data.results);
+				}
+			});
 		},
 
 		fetchCustomerSubs: function(context, customer) {
 			// customer.id
-			setInterval(function() {
-				customer.subs = [];
-			}, 2000);
+			ajax("/customers/" + customer.id + "/subscriptions").then(data => {
+				if (data.success)
+					customer.subs = data.results;
+			});
 		}
 	}
 });
