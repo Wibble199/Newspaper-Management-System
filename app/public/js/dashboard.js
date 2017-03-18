@@ -94,14 +94,52 @@ var store = new Vuex.Store({
 // ------------- //
 var Overview = {
 	template: '#route-view-overview',
-	data:  function() { return {
-	}}
+
+	computed: {
+
+	},
+
+	mounted: function() {
+		new Chart($('#chart-weekly-subs-by-day').get(0), {
+			type: "bar",
+			data: {
+				labels: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+				datasets: [{
+					label: "You are FAKE news!",//"# of Publications",
+					data: [64, 32, 16, 8, 4, 2, 1],
+					backgroundColor: "rgba(51, 122, 183, 0.6)",
+					borderColor: "rgba(51, 122, 183, 1)",
+					borderWidth: 1
+				}]
+			},
+			options: {
+				scales: {
+					yAxes: [{
+						ticks: {
+							beginAtZero:true
+						}
+					}]
+				}
+			}
+		});
+
+		new Chart($('#chart-weekly-subs-by-pub').get(0), {
+			type: "doughnut",
+			data: {
+				labels: ["The Ormskirk Herlard", "The Guardian", "The Independent"],
+				datasets: [{
+					data: [64, 32, 16],
+					backgroundColor: "rgba(51, 122, 183, 0.6)",
+					borderColor: "rgba(51, 122, 183, 1)",
+					borderWidth: 1
+				}]
+			}
+		});
+	}
 };
 
 var Routes = {
 	template: '#route-view-driver-routes',
-	data: function() { return {
-	}},
 
 	computed: {
 		currentDeliveryRoute: function() {
@@ -187,14 +225,10 @@ var Customers = {
 
 var Publications = {
 	template: '#route-view-publications',
-	data: function() { return {
-	}}
 };
 
 var Metrics = {
 	template: '#route-view-metrics',
-	data: function() { return {
-	}}
 };
 
 // ------------- //
