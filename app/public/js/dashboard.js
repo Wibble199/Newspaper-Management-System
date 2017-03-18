@@ -22,6 +22,23 @@ var store = new Vuex.Store({
 		setDirectionsServiceResults: function(state, v) { state.directionsServiceResults = v; }
 	},
 
+	getters: {
+		getRequiredPublications: function(state) {
+			var publicationsRequired = {};
+			for (var k = 0; route = state.deliveryDataRaw[k]; k++) {
+				for (var i = 0; delivery = route[i]; i++) {
+					for (var j = 0; pubname = delivery.publication_name[j]; j++) {
+						if (!publicationsRequired[pubname])
+							publicationsRequired[pubname] = [0, 0, 0]; // Should be an array with as many elements as the number of drivers + 1 (last is total)
+						publicationsRequired[pubname][k]++;
+						publicationsRequired[pubname][2]++; // References last index (i.e. the total column)
+					}
+				}
+			}
+			return publicationsRequired;
+		}
+	},
+
 	actions: {
 		fetchCustomers: function(context) {
 			ajax("/customers").then(data => { // Async call to server to fetch data

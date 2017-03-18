@@ -83,34 +83,22 @@
 								<th>Total</th>
 							</tr>
 						</thead>
-						<tbody>
-							<tr>
-								<td>The Ormskirk Herald</td>
-								<td>4</td>
-								<td>12</td>
-								<td><strong>16</strong></td>
-							</tr>
-							<tr>
-								<td>Farmer's Weekly</td>
-								<td>5</td>
-								<td>1</td>
-								<td><strong>6</strong></td>
-							</tr>
-							<tr>
-								<td>The Independant</td>
-								<td>7</td>
-								<td>8</td>
-								<td><strong>15</strong></td>
+						<tbody v-if="store.state.deliveryDataRaw">
+							<tr v-for="(counts, publication) in store.getters.getRequiredPublications">
+								<td>{{publication}}</td>
+								<td>{{counts[0]}}</td>
+								<td>{{counts[1]}}</td>
+								<td><strong>{{counts[2]}}</strong></td>
 							</tr>
 						</tbody>
-						<tfoot>
+						<!--<tfoot>
 							<tr>
 								<th>Total</th>
 								<th>16</th>
 								<th>21</th>
 								<th>37</th>
 							</tr>
-						</tfoot>
+						</tfoot>-->
 					</table>
 				</div>
 			</div>
