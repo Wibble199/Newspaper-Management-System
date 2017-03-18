@@ -83,34 +83,22 @@
 								<th>Total</th>
 							</tr>
 						</thead>
-						<tbody>
-							<tr>
-								<td>The Ormskirk Herald</td>
-								<td>4</td>
-								<td>12</td>
-								<td><strong>16</strong></td>
-							</tr>
-							<tr>
-								<td>Farmer's Weekly</td>
-								<td>5</td>
-								<td>1</td>
-								<td><strong>6</strong></td>
-							</tr>
-							<tr>
-								<td>The Independant</td>
-								<td>7</td>
-								<td>8</td>
-								<td><strong>15</strong></td>
+						<tbody v-if="store.state.deliveryDataRaw">
+							<tr v-for="(counts, publication) in store.getters.getRequiredPublications">
+								<td>{{publication}}</td>
+								<td>{{counts[0]}}</td>
+								<td>{{counts[1]}}</td>
+								<td><strong>{{counts[2]}}</strong></td>
 							</tr>
 						</tbody>
-						<tfoot>
+						<!--<tfoot>
 							<tr>
 								<th>Total</th>
 								<th>16</th>
 								<th>21</th>
 								<th>37</th>
 							</tr>
-						</tfoot>
+						</tfoot>-->
 					</table>
 				</div>
 			</div>
@@ -132,7 +120,7 @@
 				<div class="panel panel-info">
 					<div class="panel-heading">Weekly subscriptions by day</div>
 					<div class="panel-body">
-						Panel content
+						<canvas id="chart-weekly-subs-by-day" width="400" height="300"></canvas>
 					</div>
 				</div>
 			</div>
@@ -141,7 +129,7 @@
 				<div class="panel panel-info">
 					<div class="panel-heading">Weekly subscriptions by publication</div>
 					<div class="panel-body">
-						Panel content
+						<canvas id="chart-weekly-subs-by-pub" width="400" height="300"></canvas>
 					</div>
 				</div>
 			</div>
@@ -160,7 +148,7 @@
 
 	<!-- Driver routes -->
 	<script id="route-view-driver-routes" type="text/template">
-	<div>
+	<div id="route-view-inner-container">
 		<div class="page-header">
 			<h1>Routes <small>Today's delivery plan</small></h1>
 		</div>
@@ -171,47 +159,34 @@
 		</ul>
 
 		<div class="row">
-			<div class="col-md-6">
-				Table with publications for driver {{$route.params.driver}}
-
+			<div class="col-md-6" style="max-height:732px;">
 				<table class="table">
 					<thead>
 						<tr>
+							<th>&nbsp;</th>
 							<th>Address</th>
 							<th>Publications</th>
 						</tr>
 					</thead>
-					<tbody>
-						<tr>
+					<tbody v-if="store.state.directionsServiceResults">
+						<tr v-for="(routeindex, index) in waypointOrder">
+							<td>
+								<div class="map-marker">{{"BCDEFGHIJKLMNOPQRSTUVWXYZ".split("")[index]}}</div>
+							</td>
 							<td>
 								<address>
-								Twitter, Inc.<br>
-								1355 Market Street,<br>
-								Suite 900<br>
-								San Francisco,<br>
-								CA 94103
+								{{currentDeliveryRoute[routeindex].name}}
+								{{currentDeliveryRoute[routeindex].address1}}<br>
+								{{currentDeliveryRoute[routeindex].address2}}<br>
+								{{currentDeliveryRoute[routeindex].address3}}<br v-if="currentDeliveryRoute[routeindex].address3">
+								{{currentDeliveryRoute[routeindex].address4}}<br v-if="currentDeliveryRoute[routeindex].address4">
+								{{currentDeliveryRoute[routeindex].postcode}}
 								</address>
 							</td>
 							<td>
 								<ul>
-									<li>Hellooooo</li>
-									<li>Shurup an' keep peddlin'</li>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								<address>
-								Twitter, Inc.<br>
-								1355 Market Street,<br>
-								Suite 900<br>
-								San Francisco,<br>
-								CA 94103
-								</address>
-							</td>
-							<td>
-								<ul>
-									<li>Hellooooo</li>
-									<li>Shurup an' keep peddlin'</li>
+									<li v-for="pname in currentDeliveryRoute[routeindex].publication_name">{{pname}}</li>
+								</ul>
 							</td>
 						</tr>
 					</tbody>
@@ -223,8 +198,7 @@
 					<div class="panel-heading">Map</div>
 					<div class="panel-body">
 						<div id="route-map" style="width:100%;height:300px"></div>
-						
-						<p>Map instructions go here</p>
+						<div id="route-directions" style="max-height:359px;overflow-y:auto"></div>
 					</div>
 				</div>
 			</div>
@@ -304,7 +278,7 @@
 							<tr><th>{{selectedCustomer.name.split(" ")[0]}}'s subscriptions</th></tr>
 						</thead>
 						<tbody>
-							<tr v-for="sub in selectedCustomer.subs"><td>{{sub}}</td></tr>
+							<tr v-for="sub in selectedCustomer.subs"><td>{{sub.name}}</td></tr>
 							<tr class="info" v-if="selectedCustomer.subs === null"><td>Loading...</td></tr>
 							<tr class="warning" v-else-if="selectedCustomer.subs.length == 0"><td>No subscriptions</td></tr>
 						</tbody>
@@ -349,6 +323,7 @@
 	<script src="/js/vue.min.js"></script>
 	<script src="/js/vuex.min.js"></script>
 	<script src="/js/vue-router.min.js"></script>
+	<script src="/js/Chart.min.js"></script>
 	<script src="/js/shared.js"></script>
 	<script src="/js/dashboard.js"></script>
 	<script async defer src="/googlemapsapi?cb=gmapsApiLoad"></script>

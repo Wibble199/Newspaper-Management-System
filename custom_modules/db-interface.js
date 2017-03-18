@@ -3,9 +3,14 @@ const fs = require('fs');
 const db = require('./db-connection');
 const validator = require('./validator');
 
-var generateCalendarEvents_qry = fs.readFileSync('./app/sql/generate-calendar-events.sql', 'utf8');
+// Function that will dynamically load all SQL queries in the `./app/sql` folder and put them in `loadedQueries` object
+var loadedQueries = {};
+fs.readdirSync("./app/sql").forEach(fname => {
+	var normalisedName = fname.substring(0, fname.lastIndexOf(".")).replace(/-([a-z])/g, (_, l) => l.toUpperCase()); // Converts dashed name to camel case. E.g. test-file-string => testFileString
+	loadedQueries[normalisedName] = fs.readFileSync("./app/sql/" + fname, 'utf8');
+});
 
-module.exports = {
+var dbInterface = module.exports = {
 	// ----------------------- //
 	// Authentication related //
 	// --------------------- //
@@ -319,8 +324,52 @@ module.exports = {
 	// Generation-only functions //
 	// ------------------------ //
 	generate: {
+		/**
+		 * Generates a list of subscriptions for a customer for a particular month.
+		 * Returns the date, publication name and publication color for all days in that month.
+		 * @param {number} customerId The ID of the customer whose calendar dates to fetch
+		 * @param {number|string} year The year of the month to fetch results for
+		 * @param {number|string} month The month to fetch results for (1 - 12 not 0 - 11)
+		 * @returns {Promise}
+		 */
 		calendarEvents: function(customerId, year, month) {
-			return asyncQuery(queryNamedParams(generateCalendarEvents_qry, {customerId, year, month}));
+			return asyncQuery(queryNamedParams(loadedQueries.generateCalendarEvents, {customerId, year, month}));
+		},
+
+		/**
+		 * Generates a result set that contains the deliveries for a particular day.
+		 * Returns customer id, name and address and publication id and name.
+		 * @param {string} day The day to generate the results for (format: `YYYY-MM-DD`)
+		 * @returns {Promise}
+		 */
+		deliveryList: function(day) {
+			return asyncQuery(queryNamedParams(loadedQueries.generateDeliveryList, {day}));
+		},
+
+		/**
+		 * Like `deliveryList` this function generates a result set that contains the deliveries for a particular day.
+		 * Instead of resolving with two array items for a customer with 2 subscriptions this will instead resolve with arrays for `publication_id` and `publication_name`
+		 * @param {string} day The day to generate the results for (format: `YYYY-MM-DD`)
+		 * @returns {Promise}
+		 */
+		deliveryListGrouped: function(day) {
+			return dbInterface.generate.deliveryList(day).then(results => {
+				// This function takes the results of multiple SQL rows and flattens them by customer.
+				// This relies on the array being sorted by customer ID so that all entries for a customer are adjacent to one another.
+				var mappedResults = [], el, j;
+				for (var i = 0; el = results[i]; i++) // Set el to be the current element
+					if (i == 0 || results[i].customer_id != results[i - 1].customer_id) { // If we are on the first entry or the customer we are on is different to the last customer
+						// Create a new entry in the mapping array with this (next) customer
+						j = mappedResults.push(results[i]) - 1; // Set j to be the array index of the last inserted customer mapping
+						mappedResults[j].publication_id = [mappedResults[j].publication_id];     // Replace `publication_id` number and `publication_name` string with
+						mappedResults[j].publication_name = [mappedResults[j].publication_name]; // An array which for now just contains the same value (e.g. "Foo" => ["Foo"])
+
+					} else { // Otherwise if this customer is the same as the last one
+						mappedResults[j].publication_id.push(results[i].publication_id); // Simply add this `publication_id` and `publication_name` the arrays
+						mappedResults[j].publication_name.push(results[i].publication_name); // in the corresponding mapped results array object (j still refers to the latest item in mappedResults)
+					}
+				return mappedResults;
+			});
 		}
 	}
 };

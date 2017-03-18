@@ -1,4 +1,5 @@
 const db = require('./db-interface');
+const pathfinder = require('./pathfinder');
 
 module.exports = function(app) {
 	// ------------------------ //
@@ -202,6 +203,18 @@ module.exports = function(app) {
 			res.json({success: true, events});
 
 		}).catch(
+			err => res.json({success: false, err})
+		);
+	}));
+
+	// Fetches the deliveries required for a particular day
+	app.get("/deliverylist/:day", requireAdmin((req, res) => {
+		db.generate.deliveryListGrouped(req.params.day).then(results => pathfinder.calculateRoute(
+			{lat: 53.562447, lng: -2.885611},
+			results.filter(el => el.id != 12),
+			2, true
+		)).then(
+			results => res.json({success: true, results}),
 			err => res.json({success: false, err})
 		);
 	}));

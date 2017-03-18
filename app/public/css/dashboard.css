@@ -8,10 +8,12 @@
 	margin-top: 0;
 }
 
+/* Table footer thick line */
 tfoot {
 	border-top: 2px solid #DDD;
 }
 
+/* Tab control */
 .tab-navigation {
 	border-bottom: 1px solid #ddd;
     padding-left: 0;
@@ -35,8 +37,18 @@ tfoot {
 	background-color: #EEE;
 }
 
+/* Slight edit to make small buttons look right on panel headings*/
 .panel-heading .btn.btn-xs {
 	position: relative;
     top: -1px;
     right: -5px;
+}
+
+/* Route list map marker */
+.map-marker {
+	background: url(../img/map-marker.png);
+	width: 22px;
+	height: 40px;
+	text-align: center;
+	font-size: 1.2em;
 }
