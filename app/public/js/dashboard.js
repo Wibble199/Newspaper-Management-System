@@ -3,20 +3,23 @@
 // ----------------- //
 var gmapsApiLoad;
 var googleMapsPromise = new Promise(function(resolve, reject) { gmapsApiLoad = resolve; });
-var map, directionsService, directionsRenderer;
+var map, directionsRenderer;
 
 // ----------------------- //
 // Main data store (Vuex) //
 // --------------------- //
 var store = new Vuex.Store({
 	state: {
-		customers: []
+		customers: [],
+
+		deliveryDataRaw: null,
+		directionsServiceResults: null
 	},
 
 	mutations: {
-		setCustomers: function(state, v) {
-			state.customers = v;
-		}
+		setCustomers: function(state, v) { state.customers = v; },
+		setDeliveryDataRaw: function(state, v) { state.deliveryDataRaw = v; },
+		setDirectionsServiceResults: function(state, v) { state.directionsServiceResults = v; }
 	},
 
 	actions: {
@@ -30,83 +33,20 @@ var store = new Vuex.Store({
 			});
 		},
 
-		fetchCustomerSubs: function(context, customer) {
-			// customer.id
-			ajax("/customers/" + customer.id + "/subscriptions").then(data => {
-				if (data.success)
-					customer.subs = data.results;
-			});
-		}
-	}
-});
-
-// --------------- //
-// Vue components //
-// ------------- //
-var Overview = {
-	template: '#route-view-overview',
-	data:  function() { return {
-	}}
-};
-
-var Routes = {
-	template: '#route-view-driver-routes',
-	data: function() { return {
-		deliveryDataRaw: null,
-		directionsServiceResults: null,
-		driverRoutes: null
-	}},
-
-	computed: {
-		currentDeliveryRoute: function() {
-			return this.deliveryDataRaw ? this.deliveryDataRaw[this.$route.params.driver - 1] : null;
-		},
-
-		waypointOrder: function() {
-			return this.directionsServiceResults ? this.directionsServiceResults[this.$route.params.driver - 1].routes[0].waypoint_order : null;
-		}
-	},
-
-	watch: {
-		'$route': function() { // Triggers when the route has a parameter change (I.E. when the driver is changed) but not when the route is changed to a different component.
-			this.setMapDirections();
-		}
-	},
-
-	mounted: function() {
-		this.initialiseMap();
-	},
-
-	methods: {
-		initialiseMap: function() {
-			var thisVue = this;
-			googleMapsPromise.then(function() {
-				map = new google.maps.Map($('#route-map').get(0), {
-					center: {lat: 53.568731, lng: -2.885006},
-					zoom: 13,
-					disableDefaultUI: true
-				});
-
-				directionsService = new google.maps.DirectionsService();
-				directionsRenderer = new google.maps.DirectionsRenderer();
-				directionsRenderer.setMap(map);
-
-				thisVue.requestDirectionData();
-			});
-		},
-
-		requestDirectionData: function() {
-			var thisVue = this;
-			var loadingOverlayTarget = $('#route-view-inner-container').loadingOverlay(true);
+		fetchRoutes: function(context) {
 			var start = {lat: 53.562447, lng: -2.885611};
 			var date = "2017-03-17";
+			var directionsService;
 
-			ajax("/deliverylist/" + date).then(function(data) {
+			googleMapsPromise.then(function() {
+				directionsService = new google.maps.DirectionsService();
+				return ajax("/deliverylist/" + date);
+			}).then(function(data) {
 				if (!data.success) return Promise.reject(data.err);
 
 				// For each driver, calculate a route with their waypoints
 				var promises = [];
-				thisVue.deliveryDataRaw = data.results;
+				context.commit("setDeliveryDataRaw", data.results);
 
 				for (var i = 0; i < data.results.length; i++) { // Loop through all the driver arrays
 					promises.push(new Promise(function(resolve, reject) { // Convert the directionsService calls into Promises
@@ -135,15 +75,72 @@ var Routes = {
 				return Promise.all(promises); // Return a Promise that will resolve when all driver's routes have been fetched
 
 			}).then(function(responses) {
-				thisVue.directionsServiceResults = responses;
-				thisVue.setMapDirections();
+				context.commit("setDirectionsServiceResults", responses);
+			});
+		},
 
-				loadingOverlayTarget.loadingOverlay(false);
+		fetchCustomerSubs: function(context, customer) {
+			// customer.id
+			ajax("/customers/" + customer.id + "/subscriptions").then(data => {
+				if (data.success)
+					customer.subs = data.results;
+			});
+		}
+	}
+});
+
+// --------------- //
+// Vue components //
+// ------------- //
+var Overview = {
+	template: '#route-view-overview',
+	data:  function() { return {
+	}}
+};
+
+var Routes = {
+	template: '#route-view-driver-routes',
+	data: function() { return {
+	}},
+
+	computed: {
+		currentDeliveryRoute: function() {
+			return store.state.deliveryDataRaw ? store.state.deliveryDataRaw[this.$route.params.driver - 1] : null;
+		},
+
+		waypointOrder: function() {
+			return store.state.directionsServiceResults ? store.state.directionsServiceResults[this.$route.params.driver - 1].routes[0].waypoint_order : null;
+		}
+	},
+
+	watch: {
+		'$route': function() { // Triggers when the route has a parameter change (I.E. when the driver is changed) but not when the route is changed to a different component.
+			this.setMapDirections();
+		}
+	},
+
+	mounted: function() {
+		this.initialiseMap();
+	},
+
+	methods: {
+		initialiseMap: function() {
+			var thisVue = this;
+			googleMapsPromise.then(function() {
+				map = new google.maps.Map($('#route-map').get(0), {
+					center: {lat: 53.568731, lng: -2.885006},
+					zoom: 13,
+					disableDefaultUI: true
+				});
+
+				directionsRenderer = new google.maps.DirectionsRenderer();
+				directionsRenderer.setMap(map);
+				thisVue.setMapDirections();
 			});
 		},
 
 		setMapDirections: function() {
-			directionsRenderer.setDirections(this.directionsServiceResults[this.$route.params.driver - 1]);
+			directionsRenderer.setDirections(store.state.directionsServiceResults[this.$route.params.driver - 1]);
 		}	
 	}
 };
@@ -227,6 +224,7 @@ var vm = new Vue({
 	mounted: function() {
 		this.fetchUser();
 		store.dispatch('fetchCustomers');
+		store.dispatch('fetchRoutes');
 	},
 
 	methods: {

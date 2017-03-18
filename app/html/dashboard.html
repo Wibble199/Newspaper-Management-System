@@ -180,7 +180,7 @@
 							<th>Publications</th>
 						</tr>
 					</thead>
-					<tbody v-if="directionsServiceResults">
+					<tbody v-if="store.state.directionsServiceResults">
 						<tr v-for="(routeindex, index) in waypointOrder">
 							<td>
 								<div class="map-marker">{{"BCDEFGHIJKLMNOPQRSTUVWXYZ".split("")[index]}}</div>
