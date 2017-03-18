@@ -190,6 +190,7 @@ var Routes = {
 
 				directionsRenderer = new google.maps.DirectionsRenderer();
 				directionsRenderer.setMap(map);
+				directionsRenderer.setPanel($('#route-directions').get(0));
 				thisVue.setMapDirections();
 			});
 		},
