@@ -11,6 +11,7 @@ var map, directionsRenderer;
 var store = new Vuex.Store({
 	state: {
 		customers: [],
+		publications: [],
 
 		deliveryDataRaw: null,
 		directionsServiceResults: null
@@ -18,11 +19,20 @@ var store = new Vuex.Store({
 
 	mutations: {
 		setCustomers: function(state, v) { state.customers = v; },
+		setPublications: function(state, v) { state.publications = v; },
 		setDeliveryDataRaw: function(state, v) { state.deliveryDataRaw = v; },
 		setDirectionsServiceResults: function(state, v) { state.directionsServiceResults = v; }
 	},
 
 	getters: {
+		getPublicationById: function(state) {
+			return function(id) {
+				for (var i = 0; i < state.publications.length; i++)
+					if (state.publications[i].id == id)
+						return state.publications[i];
+			}
+		},
+
 		getRequiredPublications: function(state) {
 			var publicationsRequired = {};
 			for (var k = 0; route = state.deliveryDataRaw[k]; k++) {
@@ -50,14 +60,20 @@ var store = new Vuex.Store({
 			});
 		},
 
+		fetchPublications: function(context) {
+			ajax("/publications").then(data => {
+				if (data.success)
+					context.commit("setPublications", data.results);
+			});
+		},
+
 		fetchRoutes: function(context) {
 			var start = {lat: 53.562447, lng: -2.885611};
-			var date = "2017-03-17";
 			var directionsService;
 
 			googleMapsPromise.then(function() {
 				directionsService = new google.maps.DirectionsService();
-				return ajax("/deliverylist/" + date);
+				return ajax("/deliverylist/" + today());
 			}).then(function(data) {
 				if (!data.success) return Promise.reject(data.err);
 
@@ -117,29 +133,43 @@ var Overview = {
 	},
 
 	mounted: function() {
-		new Chart($('#chart-weekly-subs-by-day').get(0), {
-			type: "bar",
-			data: {
-				labels: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-				datasets: [{
-					label: "You are FAKE news!",//"# of Publications",
-					data: [64, 32, 16, 8, 4, 2, 1],
-					backgroundColor: "rgba(51, 122, 183, 0.6)",
-					borderColor: "rgba(51, 122, 183, 1)",
+		//// Initialise charts
+		// Weekly subscriptions by day chart
+		Promise.all([storeWatch("publications"), ajax("/weeklysubsbyday/" + today())]).then(function(d) {
+			var datasets = [];
+
+			$.each(d[1].results, function(publication_id, el) {
+				datasets.push({
+					label: store.getters.getPublicationById(publication_id).name,
+					data: el,
+					backgroundColor: hexToRgba(store.getters.getPublicationById(publication_id).color, 0.6),
+					borderColor: hexToRgba(store.getters.getPublicationById(publication_id).color),
 					borderWidth: 1
-				}]
-			},
-			options: {
-				scales: {
-					yAxes: [{
-						ticks: {
-							beginAtZero:true
-						}
-					}]
+				});
+			});
+
+			console.log(datasets);
+
+			new Chart($('#chart-weekly-subs-by-day').get(0), {
+				type: "bar",
+				data: {
+					labels: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+					datasets: datasets
+				},
+				options: {
+					scales: {
+						yAxes: [{
+							ticks: {
+								beginAtZero:true
+							},
+							stacked: true
+						}]
+					}
 				}
-			}
+			});
 		});
 
+		// Weekly subscriptions by subscription
 		new Chart($('#chart-weekly-subs-by-pub').get(0), {
 			type: "doughnut",
 			data: {
@@ -276,13 +306,14 @@ var vm = new Vue({
 	mounted: function() {
 		this.fetchUser();
 		store.dispatch('fetchCustomers');
+		store.dispatch('fetchPublications');
 		store.dispatch('fetchRoutes');
 	},
 
 	methods: {
 		fetchUser: function() {
 			var thisVue = this;
-			ajax('/user').then(function(d) {
+			ajax("/user").then(function(d) {
 				thisVue.user = d.user;
 			});
 		}
@@ -290,3 +321,38 @@ var vm = new Vue({
 
 	router: router
 });
+
+/**
+ * Returns the current day in YYYY-MM-DD format.
+ * @returns {string}
+ */
+function today() {
+	var dt = new Date();
+	var m = dt.getMonth(), d = dt.getDate();
+	return dt.getFullYear() + "-" + (m < 10 ? "0" : "") + m + "-" + (d < 10 ? "0" : "") + d;
+}
+
+/**
+ * Create a promise that will resolve when a specified property in the store updates.
+ * @param {string} property The name of the property to watch
+ * @returns {Promise}
+ */
+function storeWatch(property) {
+	return new Promise(function(resolve, reject) {
+		store.watch(function(state) { return state[property]; },
+		function() { resolve(); });
+	});
+}
+
+/**
+ * Converts a HEX color to RGBA
+ * @param {string} color The HEX color to Convert
+ * @param {number} [alpha=1] The alpha value for the RGBA string
+ * @returns {string}
+ */
+function hexToRgba(color, alpha) {
+	var r = parseInt(color.substr(0, 2), 16);
+	var g = parseInt(color.substr(2, 2), 16);
+	var b = parseInt(color.substr(4, 2), 16);
+	return "rgba(" + r + ", " + g + ", " + b + ", " + (alpha || 1) + ")";
+}

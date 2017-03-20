@@ -218,6 +218,13 @@ module.exports = function(app) {
 			err => res.json({success: false, err})
 		);
 	}));
+
+	app.get("/weeklysubsbyday/:day", (req, res) => {
+		db.metrics.weeklySubsByDay(req.params.day).then(
+			results => res.json({success: true, results}),
+			err => res.json({sucess: false, err})
+		);
+	})
 };
 
 /**

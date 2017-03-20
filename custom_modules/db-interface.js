@@ -371,6 +371,25 @@ var dbInterface = module.exports = {
 				return mappedResults;
 			});
 		}
+	},
+
+	// -------------------------- //
+	// Metrics related functions //
+	// ------------------------ //
+	metrics: {
+		weeklySubsByDay: function(day) {
+			return asyncQuery(queryNamedParams(loadedQueries.weeklySubsByDay, {day})).then(
+				results => {
+					var newData = {};
+					results.forEach(el => {
+						if (!newData[el.publication_id])
+							newData[el.publication_id] = [0, 0, 0, 0, 0, 0, 0];
+						newData[el.publication_id][el.day] = el.count;
+					});
+					return newData;
+				}
+			);
+		}
 	}
 };
 
