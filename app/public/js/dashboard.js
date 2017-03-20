@@ -10,8 +10,8 @@ var map, directionsRenderer;
 // --------------------- //
 var store = new Vuex.Store({
 	state: {
-		customers: [],
-		publications: [],
+		customers: [], // Because of reasons with the way I've done the DOM, this should be an empty array not null
+		publications: null,
 
 		deliveryDataRaw: null,
 		directionsServiceResults: null
@@ -135,7 +135,7 @@ var Overview = {
 	mounted: function() {
 		//// Initialise charts
 		// Weekly subscriptions by day chart
-		Promise.all([storeWatch("publications"), ajax("/weeklysubsbyday/" + today())]).then(function(d) {
+		Promise.all([storeNotNull("publications"), ajax("/weeklysubsbyday/" + today())]).then(function(d) {
 			var datasets = [];
 
 			$.each(d[1].results, function(publication_id, el) {
@@ -211,7 +211,7 @@ var Routes = {
 	methods: {
 		initialiseMap: function() {
 			var thisVue = this;
-			googleMapsPromise.then(function() {
+			Promise.all([storeNotNull("directionsServiceResults"), googleMapsPromise]).then(function() {
 				map = new google.maps.Map($('#route-map').get(0), {
 					center: {lat: 53.568731, lng: -2.885006},
 					zoom: 13,
@@ -247,7 +247,6 @@ var Customers = {
 				return customer.name.toLowerCase().indexOf(thisVue.searchText.toLowerCase()) > -1 ||
 					customer.email.toLowerCase().indexOf(thisVue.searchText.toLowerCase()) > -1
 			});
-			return this.customers;
 		},
 
 		customers: function() { return store.state.customers; },
@@ -342,6 +341,16 @@ function storeWatch(property) {
 		store.watch(function(state) { return state[property]; },
 		function() { resolve(); });
 	});
+}
+
+/**
+ * Creates a promise that will resolve when the specified property in the store is not null
+ * @param {string} property The name of the property to watch
+ * @param {Promise}
+ */
+function storeNotNull(property) {
+	if (store.state[property] == null) return storeWatch(property);
+	else return Promise.resolve();
 }
 
 /**
