@@ -134,53 +134,68 @@ var Overview = {
 
 	mounted: function() {
 		//// Initialise charts
-		// Weekly subscriptions by day chart
-		Promise.all([storeNotNull("publications"), ajax("/weeklysubsbyday/" + today())]).then(function(d) {
-			var datasets = [];
+		Promise.all([storeNotNull("publications"), ajax("/weeklysubsbyday/" + today())]).then(function(d) { // Wait for publication data to load and also request `/weeklysubsbyday`
 
+			// Generate RGBA colors for each of the publications
+			var publicationColors = [];
+			$.each(store.state.publications, function(_, pub) {
+				publicationColors[pub.id] = {
+					bg: hexToRgba(pub.color, 0.6),
+					border: hexToRgba(pub.color)
+				};
+			});
+
+			// Create dataset for weekly subscriptions by day chart
+			var byDayDatasets = [];
 			$.each(d[1].results, function(publication_id, el) {
-				datasets.push({
+				byDayDatasets.push({
 					label: store.getters.getPublicationById(publication_id).name,
-					data: el,
-					backgroundColor: hexToRgba(store.getters.getPublicationById(publication_id).color, 0.6),
-					borderColor: hexToRgba(store.getters.getPublicationById(publication_id).color),
+					data: el.slice(0, 7),
+					backgroundColor: publicationColors[publication_id].bg,
+					borderColor: publicationColors[publication_id].border,
 					borderWidth: 1
 				});
 			});
 
-			console.log(datasets);
-
+			// Create the weekly subscriptions by day chart
 			new Chart($('#chart-weekly-subs-by-day').get(0), {
 				type: "bar",
 				data: {
 					labels: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-					datasets: datasets
+					datasets: byDayDatasets
 				},
 				options: {
 					scales: {
 						yAxes: [{
-							ticks: {
-								beginAtZero:true
-							},
+							ticks: {beginAtZero:true},
 							stacked: true
 						}]
 					}
 				}
 			});
-		});
 
-		// Weekly subscriptions by subscription
-		new Chart($('#chart-weekly-subs-by-pub').get(0), {
-			type: "doughnut",
-			data: {
-				labels: ["The Ormskirk Herlard", "The Guardian", "The Independent"],
+			// Create dataset for weekly subscriptions by day chart
+			var bySubData = {
+				labels: [],
 				datasets: [{
-					data: [64, 32, 16],
-					backgroundColor: "rgba(51, 122, 183, 0.6)",
-					borderColor: "rgba(51, 122, 183, 1)",
+					data: [],
+					backgroundColor: [],
+					borderColor: [],
 					borderWidth: 1
 				}]
-			}
+			};
+			$.each(d[1].results, function(publication_id, el) {
+				bySubData.labels.push(store.getters.getPublicationById(publication_id).name);
+				bySubData.datasets[0].data.push(el[7]);
+				bySubData.datasets[0].backgroundColor.push(publicationColors[publication_id].bg);
+				bySubData.datasets[0].borderColor.push(publicationColors[publication_id].border);
+			})
+
+			// Create the weekly subscriptions by subscription chart
+			new Chart($('#chart-weekly-subs-by-pub').get(0), {
+				type: "doughnut",
+				data: bySubData
+			});
 		});
 	}
 };

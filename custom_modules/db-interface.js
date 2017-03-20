@@ -383,8 +383,9 @@ var dbInterface = module.exports = {
 					var newData = {};
 					results.forEach(el => {
 						if (!newData[el.publication_id])
-							newData[el.publication_id] = [0, 0, 0, 0, 0, 0, 0];
+							newData[el.publication_id] = [0, 0, 0, 0, 0, 0, 0, 0];
 						newData[el.publication_id][el.day] = el.count;
+						newData[el.publication_id][7] += el.count; // Last is total
 					});
 					return newData;
 				}
