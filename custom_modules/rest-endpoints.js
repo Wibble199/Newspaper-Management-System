@@ -219,12 +219,12 @@ module.exports = function(app) {
 		);
 	}));
 
-	app.get("/weeklysubsbyday/:day", (req, res) => {
+	app.get("/weeklysubsbyday/:day", requireAdmin((req, res) => {
 		db.metrics.weeklySubsByDay(req.params.day).then(
 			results => res.json({success: true, results}),
 			err => res.json({sucess: false, err})
 		);
-	})
+	}));
 };
 
 /**
