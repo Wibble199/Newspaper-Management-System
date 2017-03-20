@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.6.0
+-- version 4.5.4.1deb2ubuntu2
 -- http://www.phpmyadmin.net
 --
--- Host: 127.0.0.1:3306
--- Generation Time: Mar 15, 2017 at 09:22 AM
--- Server version: 5.6.29
--- PHP Version: 7.0.5
+-- Host: localhost
+-- Generation Time: Mar 20, 2017 at 01:17 PM
+-- Server version: 5.7.17-0ubuntu0.16.04.1
+-- PHP Version: 7.0.15-0ubuntu0.16.04.2
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -27,8 +27,8 @@ CREATE TABLE `customers` (
   `name` varchar(64) NOT NULL,
   `address1` varchar(64) NOT NULL,
   `address2` varchar(64) NOT NULL,
-  `address3` varchar(64) NOT NULL,
-  `address4` varchar(64) NOT NULL,
+  `address3` varchar(64) DEFAULT NULL,
+  `address4` varchar(64) DEFAULT NULL,
   `postcode` varchar(8) NOT NULL,
   `contact_num` varchar(11) NOT NULL,
   `is_admin` tinyint(1) NOT NULL DEFAULT '0'
