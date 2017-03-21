@@ -52,3 +52,11 @@ tfoot {
 	text-align: center;
 	font-size: 1.2em;
 }
+
+/* Publication table color blocks */
+.publication-color-block {
+    height: 1em;
+    width: 60px;
+    border: 1px solid #666;
+    margin-top: 0.2em;
+}

@@ -299,7 +299,22 @@
 			<h1>Publications<!-- <small>A glace at this week</small>--></h1>
 		</div>
 
-		<p>Not currently implemented.</p>
+		<table class="table">
+			<thead>
+				<tr>
+					<th style="width:40px;">ID</th>
+					<th style="width:80px;">Colour</th>
+					<th>Name</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr v-for="pub in store.state.publications">
+					<td>{{pub.id}}</td>
+					<td><div class="publication-color-block" v-bind:style="{backgroundColor:'#' + pub.color}"></div></td>
+					<td>{{pub.name}}</td>
+				</tr>
+			</tbody>
+		</table>
 	</div>
 	</script>
 
