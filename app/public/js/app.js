@@ -4,6 +4,7 @@ var vm = new Vue({
 	data: {
 		// Main data
 		user: {},
+		publications: [],
 		subscriptions: [],
 		suspensions: [],
 
@@ -16,6 +17,7 @@ var vm = new Vue({
 
 	mounted: function() {
 		this.fetchUser();
+		this.fetchPublications();
 		this.fetchSubscriptions();
 		this.fetchSuspensions();
 	},
@@ -31,6 +33,13 @@ var vm = new Vue({
 		// --------------------- //
 		// Subscription methods //
 		// ------------------- //
+		fetchPublications: function() {
+			var thisVue = this;
+			ajax('/publications').then(function(d) {
+				thisVue.$data.publications = d.results;
+			})
+		},
+
 		fetchSubscriptions: function() {
 			var thisVue = this;
 			ajax('/subscriptions').then(function(d) {

@@ -126,7 +126,7 @@
 								<div class="col-sm-9">
 									<select id="subscription-edit-publication" class="form-control" data-subscription-binding="publication_id">
 										<option value="-1" hidden></option>
-										<option value="1">Ormskirk Herald</option>
+										<option v-for="pub in publications" v-bind:value="pub.id">{{pub.name}}</option>
 									</select>
 								</div>
 							</div>
