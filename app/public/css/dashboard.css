@@ -6,6 +6,10 @@
 	}
 }
 
+.sticky-nav span {
+	margin-right: 8px;
+}
+
 .page-header {
 	margin-top: 0;
 }
