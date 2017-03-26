@@ -3,30 +3,48 @@
 <head>
 	<title>Login</title>
 	<link rel="stylesheet" href="/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="/css/shared.css" />
 	<link rel="stylesheet" href="/css/login.css" />
 </head>
 <body>
-	<div class="container login-container">
-		<form id="login-form" class="form-signin">
-			<h2 class="form-signin-heading" style="margin-top:0">Please sign in</h2>
+	<div class="panel panel-primary login-container">
+		<div class="panel-heading">
+			<h3>Ormskirk Newspapers</h3>
+		</div>
 
-			<div class="input-group">
-				<span class="input-group-addon"><span class="glyphicon glyphicon-user
-glyphicon"></span></span>
-				<input type="email" name="email" class="form-control" placeholder="Email" required autofocus>
-			</div>
+		<div class="panel-body">
+			<div class="alert alert-success"><span class="glyphicon glyphicon-info-sign"></span> Please sign in</div>
 
-			<div class="input-group">
-				<span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
-				<input type="password" name="password" class="form-control" placeholder="Password" required>
-			</div>
+			<form id="login-form" class="form-login">
+				<div class="input-group">
+					<span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
+					<input type="email" name="email" class="form-control" placeholder="Email" required autofocus>
+				</div>
 
-			<button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-		</form>
+				<div class="input-group">
+					<span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+					<input type="password" name="password" class="form-control" placeholder="Password" required>
+				</div>
+			</form>
+		</div>
+
+		<div class="panel-footer">
+			<button class="btn btn-primary btn-block" type="submit" form="login-form">Sign in</button>
+		</div>
 	</div>
 
 	<script src="/js/jquery.min.js"></script>
 	<script src="/js/bootstrap.min.js"></script>
+	<script src="/js/shared.js"></script>
 	<script src="/js/login.js"></script>
 </body>
 </html>
+
+<!--<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">Panel title</h3>
+	</div>
+	<div class="panel-body">
+		Panel content
+	</div>
+</div>-->
