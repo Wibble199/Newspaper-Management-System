@@ -170,7 +170,8 @@ var Overview = {
 							ticks: {beginAtZero:true},
 							stacked: true
 						}]
-					}
+					},
+					legend: {display: false}
 				}
 			});
 
@@ -194,7 +195,8 @@ var Overview = {
 			// Create the weekly subscriptions by subscription chart
 			new Chart($('#chart-weekly-subs-by-pub').get(0), {
 				type: "doughnut",
-				data: bySubData
+				data: bySubData,
+				options: {legend: {display: false}}
 			});
 		});
 	}

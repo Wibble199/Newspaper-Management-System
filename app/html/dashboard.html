@@ -116,30 +116,27 @@
 		</div>
 
 		<!-- Row 3 -->
-		<div class="row">
-			<div class="col-md-4">
-				<div class="panel panel-info">
-					<div class="panel-heading">Weekly subscriptions by day</div>
-					<div class="panel-body">
-						<canvas id="chart-weekly-subs-by-day" width="400" height="300"></canvas>
+		<div class="panel panel-info">
+			<div class="panel-heading">This week's metrics</div>
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-md-5">
+						<h3 style="text-align:center">Weekly subscriptions by day</h3>
+						<canvas id="chart-weekly-subs-by-day" width="400" height="250"></canvas>
 					</div>
-				</div>
-			</div>
 
-			<div class="col-md-4">
-				<div class="panel panel-info">
-					<div class="panel-heading">Weekly subscriptions by publication</div>
-					<div class="panel-body">
-						<canvas id="chart-weekly-subs-by-pub" width="400" height="300"></canvas>
+					<div class="col-md-5">
+						<h3 style="text-align:center">Weekly subscriptions by publication</h3>
+						<canvas id="chart-weekly-subs-by-pub" width="400" height="250"></canvas>
 					</div>
-				</div>
-			</div>
 
-			<div class="col-md-4">
-				<div class="panel panel-info">
-					<div class="panel-heading">Charts are cool</div>
-					<div class="panel-body">
-						:D
+					<div class="col-md-2">
+						<h3 style="text-align:center">Legend</h3>
+						<ul class="legend-list">
+							<li v-for="pub in store.state.publications">
+								<div v-bind:style="{backgroundColor:'#' + pub.color}"></div>{{pub.name}}
+							</li>
+						</ul>
 					</div>
 				</div>
 			</div>

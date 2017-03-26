@@ -62,3 +62,17 @@ tfoot {
     border: 1px solid #666;
     margin-top: 0.2em;
 }
+
+/* Chart legend */
+.legend-list {
+	list-style: none;
+	padding: 0;
+}
+
+.legend-list div {
+	width: 1.7em;
+	height: 1em;
+	display: inline-block;
+	border: 1px solid #999;
+	margin-right: 6px;
+}
