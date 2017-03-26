@@ -1,7 +1,9 @@
-.sticky-nav {
-	position: fixed;
-	top: 66px;
-	padding-left: 0;
+@media (min-width: 992px) { /* */
+	.sticky-nav {
+		position: fixed;
+		top: 66px;
+		padding-left: 0;
+	}
 }
 
 .page-header {

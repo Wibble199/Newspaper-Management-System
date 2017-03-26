@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta name="viewport" content="width=device-width,initial-scale=1">
 	<title>Ormskirk Newspapers - Dashboard</title>
 	<link rel="stylesheet" href="/css/bootstrap.min.css" />
 	<link rel="stylesheet" href="/css/bootstrap-datepicker.standalone.min.css" />
@@ -36,14 +37,6 @@
 
 		<!-- Main container -->
 		<div class="container-fluid">
-			<div class="row">
-				<div class="col-md-3" style="height:100%">&nbsp;</div>
-
-				<div class="col-md-9">
-					<router-view></router-view>
-				</div>
-			</div>
-
 			<div class="sticky-nav col-md-3">
 				<h1>Navigation</h1>
 
@@ -53,6 +46,14 @@
 					<router-link to="/customers" class="list-group-item">Customers</router-link>
 					<router-link to="/publications" class="list-group-item">Publications</router-link>
 					<router-link to="/metrics" class="list-group-item">Metrics</router-link>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-3" style="height:100%">&nbsp;</div>
+
+				<div class="col-md-9">
+					<router-view></router-view>
 				</div>
 			</div>
 		</div>
