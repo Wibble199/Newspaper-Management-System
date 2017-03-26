@@ -1,13 +1,22 @@
 @media (min-width: 992px) { /* */
 	.sticky-nav {
 		position: fixed;
-		top: 66px;
+		top: 58px;
 		padding-left: 0;
 	}
 }
 
 .page-header {
 	margin-top: 0;
+}
+
+/* Table bordered horizontal only */
+.table-bordered-h {
+
+}
+
+.table-bordered-h tr {
+	border-bottom: 1px solid #ECF0F1
 }
 
 /* Table footer thick line */
@@ -25,7 +34,7 @@ tfoot {
 
 .tab-navigation .tab {
 	border: 1px solid #DDD;
-	padding: 12px;
+	padding: 13px;
 	text-decoration: none;
 	border-radius: 6px 6px 0 0;
 }
