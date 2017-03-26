@@ -1,11 +1,11 @@
 .add-button {
 	position: relative;
-    top: -20px;
+	top: -20px;
 }
 
 .edit-delete-group {
 	position: absolute;
-    right: 9px;
+	right: 9px;
 }
 
 #subscription-list .edit-delete-group { top: 18px; }
@@ -16,11 +16,11 @@ s {
 }
 
 .subscription-legend-dot {
-    position: relative;
-    display: inline-block;
-    top: 2px;
-    height: 1em; width: 1em;
+	position: relative;
+	display: inline-block;
+	top: 2px;
+	height: 1em; width: 1em;
 
-    border-radius: 50%;
-    border: 1px solid #333;
+	border-radius: 50%;
+	border: 1px solid #333;
 }
