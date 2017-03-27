@@ -174,21 +174,17 @@ module.exports = function(app) {
 	// ------------------- //
 	// PAYMENT END POINTS //
 	// ----------------- //
-	app.get("/payments/:week", requireAuth((req, res) => {
-		db.payments.calculateAmountDue(req.user.id, req.params.week).then(
-			result => res.json(result ?
-				{success: true, total: result.total, paid: !!result.paid} :
-				{success: true, total: 0, paid: false}),
+	app.get("/payments", requireAuth((req, res) => {
+		db.payments.getUnpaidFees(req.user.id).then(
+			results => res.json({success: true, results}),
 			err => res.json({success: false, err})
 		);
 	}));
 
 	// Admin-only for any customer
-	app.get("/payments/:customer_id/:week", requireAdmin((req, res) => {
-		db.payments.calculateAmountDue(req.params.customer_id, req.params.week).then(
-			result => res.json(result ?
-				{success: true, total: result.total, paid: !!result.paid} :
-				{success: true, total: 0, paid: false}),
+	app.get("/payments/:customer_id", requireAdmin((req, res) => {
+		db.payments.getUnpaidFees(req.params.customer_id).then(
+			results => res.json({success: true, results}),
 			err => res.json({success: false, err})
 		);
 	}));

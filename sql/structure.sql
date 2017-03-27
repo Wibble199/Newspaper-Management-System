@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Mar 27, 2017 at 08:59 PM
+-- Generation Time: Mar 27, 2017 at 11:55 PM
 -- Server version: 5.6.29
 -- PHP Version: 7.0.5
 
@@ -31,21 +31,9 @@ CREATE TABLE `customers` (
   `address4` varchar(64) DEFAULT NULL,
   `postcode` varchar(8) NOT NULL,
   `contact_num` varchar(11) NOT NULL,
+  `latest_payment` varchar(7) NOT NULL DEFAULT '2017-01',
   `is_admin` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `payments`
---
-
-CREATE TABLE `payments` (
-  `id` int(11) UNSIGNED NOT NULL,
-  `customer_id` int(11) UNSIGNED NOT NULL,
-  `payment_date` varchar(7) DEFAULT NULL,
-  `paid` tinyint(1) DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -99,14 +87,6 @@ ALTER TABLE `customers`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `payments`
---
-ALTER TABLE `payments`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `customer_id` (`customer_id`,`payment_date`),
-  ADD KEY `customer_id_2` (`customer_id`);
-
---
 -- Indexes for table `publications`
 --
 ALTER TABLE `publications`
@@ -137,11 +117,6 @@ ALTER TABLE `suspensions`
 ALTER TABLE `customers`
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
--- AUTO_INCREMENT for table `payments`
---
-ALTER TABLE `payments`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
---
 -- AUTO_INCREMENT for table `publications`
 --
 ALTER TABLE `publications`
@@ -159,12 +134,6 @@ ALTER TABLE `suspensions`
 --
 -- Constraints for dumped tables
 --
-
---
--- Constraints for table `payments`
---
-ALTER TABLE `payments`
-  ADD CONSTRAINT `fk_payments_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `subscriptions`
