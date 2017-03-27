@@ -303,6 +303,7 @@
 					<th style="width:40px;">ID</th>
 					<th style="width:80px;">Colour</th>
 					<th>Name</th>
+					<th style="width:120px;">Price per issue</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -310,6 +311,7 @@
 					<td>{{pub.id}}</td>
 					<td><div class="publication-color-block" v-bind:style="{backgroundColor:'#' + pub.color}"></div></td>
 					<td>{{pub.name}}</td>
+					<td>£{{pub.price.toFixed(2)}}</td>
 				</tr>
 			</tbody>
 		</table>
