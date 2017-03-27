@@ -1,4 +1,4 @@
-SELECT subs.customer_id, SUM(price) AS total, pays.amount IS NOT NULL AS paid
+SELECT subs.customer_id, SUM(price) AS total, COALESCE(pays.paid, 0) AS paid
 
 # Select all days for the given week
 FROM (
@@ -16,7 +16,7 @@ INNER JOIN publications AS pubs
 
 # Join to payments to check if customer has paid
 LEFT JOIN payments AS pays
-	ON subs.customer_id = pays.customer_id AND DATE_FORMAT(days.day, "%X-%V") = pays.payment_for
+	ON subs.customer_id = pays.customer_id AND DATE_FORMAT(days.day, "%X-%V") = pays.payment_date
 
 # Only allow active subscriptions
 WHERE subs.start_date <= days.day AND (subs.end_date IS NULL OR subs.end_date >= days.day)

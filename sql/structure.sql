@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.5.4.1deb2ubuntu2
+-- version 4.6.0
 -- http://www.phpmyadmin.net
 --
--- Host: localhost
--- Generation Time: Mar 20, 2017 at 01:17 PM
--- Server version: 5.7.17-0ubuntu0.16.04.1
--- PHP Version: 7.0.15-0ubuntu0.16.04.2
+-- Host: 127.0.0.1:3306
+-- Generation Time: Mar 27, 2017 at 08:59 PM
+-- Server version: 5.6.29
+-- PHP Version: 7.0.5
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -37,12 +37,26 @@ CREATE TABLE `customers` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `payments`
+--
+
+CREATE TABLE `payments` (
+  `id` int(11) UNSIGNED NOT NULL,
+  `customer_id` int(11) UNSIGNED NOT NULL,
+  `payment_date` varchar(7) DEFAULT NULL,
+  `paid` tinyint(1) DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `publications`
 --
 
 CREATE TABLE `publications` (
   `id` int(11) UNSIGNED NOT NULL,
   `name` varchar(32) NOT NULL,
+  `price` double(3,2) NOT NULL,
   `color` varchar(6) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -85,6 +99,14 @@ ALTER TABLE `customers`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `payments`
+--
+ALTER TABLE `payments`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `customer_id` (`customer_id`,`payment_date`),
+  ADD KEY `customer_id_2` (`customer_id`);
+
+--
 -- Indexes for table `publications`
 --
 ALTER TABLE `publications`
@@ -115,6 +137,11 @@ ALTER TABLE `suspensions`
 ALTER TABLE `customers`
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
+-- AUTO_INCREMENT for table `payments`
+--
+ALTER TABLE `payments`
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+--
 -- AUTO_INCREMENT for table `publications`
 --
 ALTER TABLE `publications`
@@ -132,6 +159,12 @@ ALTER TABLE `suspensions`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `payments`
+--
+ALTER TABLE `payments`
+  ADD CONSTRAINT `fk_payments_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `subscriptions`
