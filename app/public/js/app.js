@@ -85,21 +85,31 @@ var vm = new Vue({
 			var targetLi = $(e.currentTarget).closest('[data-subscription-id]');
 			var subscriptionId = targetLi.data('subscription-id'), subscriptionIndex = targetLi.index();
 
-			if (confirm("Are you sure?")) {
-				targetLi.loadingOverlay(true);
+			messageBox({
+				title: "Confirm delete",
+				text: "Are you sure you wish to delete this subscription?",
+				buttons: [
+					{label: "Don't delete", type: "default"},
+					{label: "Delete", type: "danger"}
+				],
+				callback: function(btnIndex) {
+					if (btnIndex == 1) { // If user clicked to delete
+						targetLi.loadingOverlay(true);
 
-				ajax({
-					url: '/subscriptions/' + subscriptionId,
-					method: "DELETE"
+						ajax({
+							url: '/subscriptions/' + subscriptionId,
+							method: "DELETE"
 
-				}).then(function(d) {
-					if (d.success)
-						thisVue.$data.subscriptions.splice(subscriptionIndex, 1);
+						}).then(function(d) {
+							if (d.success)
+								thisVue.$data.subscriptions.splice(subscriptionIndex, 1);
 
-				}).catch(function(err) {
-					alert("Failed to delete: " + err);
-				});
-			}
+						}).catch(function(err) {
+							messageBox({title: "Error", text: "Failed to delete: " + err});
+						});
+					}
+				}
+			});
 		},
 
 		openSubscriptionModal: function(id) {
@@ -297,8 +307,4 @@ function deliveryDaysSet(val) {
 		var $this = $(this), thisVal = $(this).val();
 		$this.prop('checked', (val & thisVal) == thisVal);
 	});
-}
-
-function createAlert(type, title, message) {
-
 }
