@@ -6,6 +6,7 @@ var vm = new Vue({
 		user: {},
 		subscriptions: [],
 		suspensions: [],
+		payments: [],
 
 		// Client only data
 		subscriptionEditId: -1,
@@ -14,10 +15,20 @@ var vm = new Vue({
 		endDateDisabled: true
 	},
 
+	computed: {
+		paymentTotal: function() {
+			if (!this.payments) return 0;
+			var s = 0;
+			for (var i = this.payments.length; i--;) s += this.payments[i].total;
+			return s;
+		}
+	},
+
 	mounted: function() {
 		this.fetchUser();
 		this.fetchSubscriptions();
 		this.fetchSuspensions();
+		this.fetchPayments();
 	},
 
 	methods: {
@@ -210,6 +221,14 @@ var vm = new Vue({
 			
 		},
 
+		// ---------------- //
+		// Payment methods //
+		// -------------- //
+		fetchPayments: function() {
+			var thisVue = this;
+			ajax('/payments').then(function(d) { thisVue.$data.payments = d.results; });
+		},
+
 		// ----- //
 		// Misc //
 		// --- //
@@ -223,6 +242,11 @@ var vm = new Vue({
 				html += (i == 0 ? "" : " " /*Add a space on all but first*/) + "<" + tagName + ">" + days[i] + "</" + tagName + ">";
 			}
 			return html;
+		},
+
+		// Simply shows the payments modal
+		paymentDetailsBtnHdlr: function() {
+			$('#payments-modal').modal('show');
 		}
 	}
 });
@@ -307,4 +331,27 @@ function deliveryDaysSet(val) {
 		var $this = $(this), thisVal = $(this).val();
 		$this.prop('checked', (val & thisVal) == thisVal);
 	});
+}
+
+function iso8601Week(w, y) {
+    var simple = new Date(y, 0, 1 + (w - 1) * 7);
+    var dow = simple.getDay();
+    var ISOweekStart = simple;
+    if (dow <= 4)
+        ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+    else
+        ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+    return ISOweekStart;
+}
+
+// Calculates a date range for a given week year and number
+// week in format "YYYY-MM"
+function weekToDaterange(week) {
+	week = week.split("-");
+	var y = +week[0], w = +week[1];
+	var d = iso8601Week(w, y);
+	d.setDate(d.getDate() - 1); // Since we start at Sunday because I'm an idiot, take one off that day
+	var startStr = fullDateStr(d);
+	d.setDate(d.getDate() + 6);
+	return startStr + " &ndash; " + fullDateStr(d);
 }
