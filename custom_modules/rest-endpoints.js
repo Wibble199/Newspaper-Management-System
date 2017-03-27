@@ -171,6 +171,28 @@ module.exports = function(app) {
 		);
 	});
 
+	// ------------------- //
+	// PAYMENT END POINTS //
+	// ----------------- //
+	app.get("/payments/:week", requireAuth((req, res) => {
+		db.payments.calculateAmountDue(req.user.id, req.params.week).then(
+			result => res.json(result ?
+				{success: true, total: result.total, paid: !!result.paid} :
+				{success: true, total: 0, paid: false}),
+			err => res.json({success: false, err})
+		);
+	}));
+
+	// Admin-only for any customer
+	app.get("/payments/:customer_id/:week", requireAdmin((req, res) => {
+		db.payments.calculateAmountDue(req.params.customer_id, req.params.week).then(
+			result => res.json(result ?
+				{success: true, total: result.total, paid: !!result.paid} :
+				{success: true, total: 0, paid: false}),
+			err => res.json({success: false, err})
+		);
+	}));
+
 	// --------------------------- //
 	// GENERATING-ONLY END POINTS //
 	// ------------------------- //

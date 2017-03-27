@@ -320,6 +320,43 @@ var dbInterface = module.exports = {
 		}
 	},
 
+	// ---------------- //
+	// Payment related //
+	// -------------- //
+	payments: {
+		/**
+		 * Fetch all payments. Returns a promise that resolves with results or rejects with error.
+		 * @returns {Promise}
+		 */
+		get: function() { return asyncQuery("SELECT * FROM payments"); },
+
+		/**
+		 * Return whether a user has paid for a particular week. Returns a promise that resolves with true/false or rejects with error.
+		 * @param {number} customer The customer ID
+		 * @param {string} week Week string in format "YYYY-WW", e.g. "2017-13"
+		 * @returns {Promise}
+		 */
+		hasPaid: function(customer, week) {
+			return asyncQuery("SELECT paid FROM payments WHERE customer_id = ? AND payment_date = ?").then(
+				results => results.length == 1 ? (results[0].paid == 1) : false
+			);
+		},
+
+		/**
+		 * Returnthe amount a customer owes for the publications for a particular week (and whether it has been paid).
+		 * Returns a promise that resolves with {total: number, paid: boolean} (or null if no data found) or rejects with error.
+		 * @param {number} customer The customer ID
+		 * @param {string} week Week string in format "YYYY-WW", e.g. "2017-13"
+		 * @returns {Promise}
+		 */
+		calculateAmountDue: function(customer, week) {
+			var [year, week] = week.split("-");
+			return asyncQuery(queryNamedParams(loadedQueries.calculateWeeklyPayments, {customer, year, week})).then(
+				results => results.length == 1 ? results[0] : null
+			);
+		}
+	},
+
 	// -------------------------- //
 	// Generation-only functions //
 	// ------------------------ //

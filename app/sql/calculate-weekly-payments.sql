@@ -20,6 +20,7 @@ LEFT JOIN payments AS pays
 
 # Only allow active subscriptions
 WHERE subs.start_date <= days.day AND (subs.end_date IS NULL OR subs.end_date >= days.day)
+	AND subs.customer_id = ::customer
 
 # Sum the price by customer_id
 GROUP BY subs.customer_id;
