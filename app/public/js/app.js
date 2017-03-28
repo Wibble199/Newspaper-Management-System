@@ -102,8 +102,11 @@ var vm = new Vue({
 					method: "DELETE"
 
 				}).then(function(d) {
-					if (d.success)
+					if (d.success) {
 						thisVue.$data.subscriptions.splice(subscriptionIndex, 1);
+						reloadMonthlyCurrent();
+					} else
+						throw d.err;
 
 				}).catch(function(err) {
 					alert("Failed to delete: " + err);
@@ -255,9 +258,16 @@ var vm = new Vue({
 				ajax({
 					url: "/suspensions/" + suspensionId,
 					method: "DELETE"
+					
 				}).then(function(d) {
-					if (d.success)
+					if (d.success) {
 						thisVue.$data.suspensions.splice(suspensionIndex, 1);
+						reloadMonthlyCurrent();
+					} else
+						throw d.err;
+
+				}).catch(function(err) {
+					alert("Failed to delete suspension: " + err);
 				});
 			}
 		},
