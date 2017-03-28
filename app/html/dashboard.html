@@ -283,7 +283,21 @@
 						<span v-else>Select a customer from the left to view their details.</span>
 					</div>
 
-					<table id="customer-subs-table" class="table table-condensed table-striped table-bordered-h" v-if="selectedCustomer">
+					<table id="customer-payments-table" class="table table-condensed table-striped table-bordered-h" v-if="selectedCustomer">
+						<thead>
+							<tr><th colspan="2">Outstanding payments</th></tr>
+						</thead>
+						<tbody>
+							<tr v-for="payment in selectedCustomer.payments">
+								<td>{{payment.week}}</td>
+								<td>£{{payment.total.toFixed(2)}}</td>
+							</tr>
+							<tr class="info" v-if="selectedCustomer.payments === null"><td>Loading...</td></tr>
+							<tr class="success" v-else-if="selectedCustomer.payments.length == 0"><td>No outstanding payments</td></tr>
+						</tbody>
+					</table>
+					
+					<table id="customer-subs-table" class="table table-condensed table-striped table-bordered-h" v-if="selectedCustomer" style="margin-top:16px">
 						<thead>
 							<tr><th>{{selectedCustomer.name.split(" ")[0]}}'s subscriptions</th></tr>
 						</thead>
