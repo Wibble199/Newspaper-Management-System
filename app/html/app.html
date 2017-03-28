@@ -12,7 +12,7 @@
 <body>
 	<div id="app"> <!-- Vue model holder -->
 		<!-- Top nav bar -->
-		<nav class="navbar navbar-inverse navbar-fixed-top">
+		<nav class="navbar navbar-default navbar-fixed-top">
 			<div class="container-fluid">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
@@ -39,10 +39,13 @@
 		<div class="container-fluid">
 
 			<!-- Alert container -->
-			<div class="row">
+			<div class="row" style="margin-top:16px;">
 				<div class="col-md-6">
-					<div class="alert alert-success">
-						<strong>You are due to receive 2 publications tomorrow</strong>
+					<div class="alert alert-warning" v-if="publicationsTomorrow == 0">
+						<strong>You aren't due to receive any publications tomorrow</strong>
+					</div>
+					<div class="alert alert-success" v-else>
+						<strong>You are due to receive {{publicationsTomorrow}} publication{{publicationsTomorrow == 1 ? "" : "s"}} tomorrow</strong>
 					</div>
 				</div>
 				<div class="col-md-6">
@@ -56,7 +59,7 @@
 			<div class="row">
 				<div class="col-md-4"> <!-- Left main panel -->
 
-					<div class="panel panel-info"> <!-- Subscription list panel -->
+					<div class="panel panel-primary"> <!-- Subscription list panel -->
 						<div class="panel-heading">
 							<h3 class="panel-title">My subscriptions</h3>
 							<a href="javascript:void(0)" class="btn btn-success btn-xs pull-right add-button" v-on:click.prevent="openSubscriptionModal(-1)"><span class="glyphicon glyphicon-plus"></span></a>
@@ -76,10 +79,10 @@
 						</div>
 					</div>
 
-					<div class="panel panel-info"> <!-- Suspension list panel -->
+					<div class="panel panel-primary"> <!-- Suspension list panel -->
 						<div class="panel-heading">
 							<h3 class="panel-title">My suspensions</h3>
-							<a href="javascript:void(0)" class="btn btn-success btn-xs pull-right add-button"><span class="glyphicon glyphicon-plus"></span></a>
+							<a href="javascript:void(0)" class="btn btn-success btn-xs pull-right add-button" v-on:click.prevent="insertSuspension"><span class="glyphicon glyphicon-plus"></span></a>
 						</div>
 						<div class="panel-body">
 							<ul id="suspension-list" class="list-group">
@@ -95,7 +98,7 @@
 									</div>
 
 									<div class="btn-group btn-group-xs edit-delete-group">
-										<a class="btn" v-bind:class="{'btn-default':suspensionEditId!=susp.id, 'btn-success':suspensionEditId==susp.id}" v-on:click.prevent="editModeSuspension"><span class="glyphicon" v-bind:class="{'glyphicon-pencil':suspensionEditId!=susp.id, 'glyphicon-floppy-disk':suspensionEditId==susp.id}"></span></a>
+										<a class="btn" v-bind:class="{'btn-default':suspensionEditId!=susp.id, 'btn-success':suspensionEditId==susp.id}" v-on:click.prevent="editModeSuspensionHdl"><span class="glyphicon" v-bind:class="{'glyphicon-pencil':suspensionEditId!=susp.id, 'glyphicon-floppy-disk':suspensionEditId==susp.id}"></span></a>
 										<a class="btn btn-danger" v-on:click.prevent="deleteSuspension"><span class="glyphicon glyphicon-trash"></span></a>
 									</div>
 								</li>
@@ -126,7 +129,7 @@
 								<div class="col-sm-9">
 									<select id="subscription-edit-publication" class="form-control" data-subscription-binding="publication_id">
 										<option value="-1" hidden></option>
-										<option value="1">Ormskirk Herald</option>
+										<option v-for="pub in publications" v-bind:value="pub.id">{{pub.name}}</option>
 									</select>
 								</div>
 							</div>
