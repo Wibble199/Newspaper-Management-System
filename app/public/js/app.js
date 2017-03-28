@@ -142,16 +142,34 @@ var vm = new Vue({
 			});
 		},
 
-		saveSuspension: function() {
+		insertSuspension: function() {
+			var defaultStartDate = new Date();
+			this.$data.suspensions.push({
+				id: 0,
+				customer_id: null,
+				start_date: defaultStartDate,
+				end_date: defaultStartDate
+			});
 
+			// If not done on the next tick, the values for the inputs are invalid and it does not enter edit mode immediately
+			Vue.nextTick(function() { this.editModeSuspension($('[data-suspension-id="0"]')); }, this);
 		},
 
-		editModeSuspension: function(e) {
+		editModeSuspensionHdl: function(e) {
+			// If we end up editing an item and there is an item at the end of the list with ID = 0, that means the user created
+			// a suspension and then clicked to edit an existing one. We want to delete the new one.
+			if (this.$data.suspensions[this.$data.suspensions.length - 1].id == 0)
+				this.$data.suspensions.splice(this.$data.suspensions.length - 1, 1);
+
+			// Now enter usual edit mode
+			var targetLi = $(e.currentTarget).closest('[data-suspension-id]');
+			this.editModeSuspension(targetLi);
+		},
+
+		editModeSuspension: function(targetLi) {
 			// If the user clicks to edit a suspension while they are editing a different one, `editMode` will be true
 			// and we will assume they wish to discard their changes. No special handling is needed as the Vue template
 			// engine will take care care of the DOM for us.
-
-			var targetLi = $(e.currentTarget).closest('[data-suspension-id]');
 			var suspensionId = targetLi.data('suspension-id'), suspensionIndex = targetLi.index();
 			var editMode = suspensionId != this.$data.suspensionEditId; // True if we are ENTERING edit mode
 
@@ -172,23 +190,45 @@ var vm = new Vue({
 			} else { // !editMode
 
 				targetLi.loadingOverlay(true);
+				var thisVue = this, pushToServerPromise;
 
-				var thisVue = this;
-				ajax({
-					url: "/suspensions/" + suspensionId,
-					method: "PUT",
-					data: $.param({
-						start_date: targetLi.find('[name="suspension-start-date"]').datepicker('getDate').toYYYYMMDD("-"),
-						end_date: targetLi.find('[name="suspension-end-date"]').datepicker('getDate').toYYYYMMDD("-")
-					})
-				}).then(function(d) {
-					if (d.success) {
-						thisVue.$data.suspensionEditId = -1;
-						return ajax({url: "/suspensions/1"});
-					} else
-						throw d.err || "Unknown error occured"; // Pass error onto 'catch'
+				// 0 is for NEW suspensions (POST)
+				if (suspensionId == 0)
+					pushToServerPromise = ajax({
+						url: "/suspensions",
+						method: "POST",
+						data: $.param({
+							start_date: targetLi.find('[name="suspension-start-date"]').datepicker('getDate').toYYYYMMDD("-"),
+							end_date: targetLi.find('[name="suspension-end-date"]').datepicker('getDate').toYYYYMMDD("-")
+						})
+					}).then(function(d) {
+						if (d.success) {
+							thisVue.$data.suspensionEditId = -1;
+							suspensionId = d.id;
+							return ajax({url: "/suspensions/" + suspensionId});
+						} else
+							throw d.err || "Unknown error occured"; // Pass error onto 'catch'
+					});
 
-				}).then(function(d) {
+				// Otherwise update existing (PUT)
+				else
+					pushToServerPromise = ajax({
+						url: "/suspensions/" + suspensionId,
+						method: "PUT",
+						data: $.param({
+							start_date: targetLi.find('[name="suspension-start-date"]').datepicker('getDate').toYYYYMMDD("-"),
+							end_date: targetLi.find('[name="suspension-end-date"]').datepicker('getDate').toYYYYMMDD("-")
+						})
+					}).then(function(d) {
+						if (d.success) {
+							thisVue.$data.suspensionEditId = -1;
+							return ajax({url: "/suspensions/" + suspensionId});
+						} else
+							throw d.err || "Unknown error occured"; // Pass error onto 'catch'
+					});
+				
+				// Whether we POST or PUT, do this afterwards
+				pushToServerPromise.then(function(d) {
 					if (d.success) {
 						thisVue.$set(thisVue.$data.suspensions, suspensionIndex, convertDateObj(d.result));
 						targetLi.loadingOverlay(false);
@@ -199,6 +239,7 @@ var vm = new Vue({
 				}).catch(function(err) {
 
 					targetLi.loadingOverlay(false);
+					alert(typeof err.invalidFields == "string" ? err.invalidFields : err);
 					console.error(err);
 				})
 			}

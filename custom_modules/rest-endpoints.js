@@ -127,7 +127,6 @@ module.exports = function(app) {
 	// Add new suspension
 	app.post("/suspensions", requireAuth((req, res) => {
 		req.body.customer_id = req.user.id;
-		console.log(req.body);
 		db.suspensions.insert(req.body).then(
 			id => res.json({success: true, id}),
 			err => res.json({success: false, err})

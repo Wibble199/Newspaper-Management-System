@@ -79,7 +79,7 @@
 					<div class="panel panel-primary"> <!-- Suspension list panel -->
 						<div class="panel-heading">
 							<h3 class="panel-title">My suspensions</h3>
-							<a href="javascript:void(0)" class="btn btn-success btn-xs pull-right add-button"><span class="glyphicon glyphicon-plus"></span></a>
+							<a href="javascript:void(0)" class="btn btn-success btn-xs pull-right add-button" v-on:click.prevent="insertSuspension"><span class="glyphicon glyphicon-plus"></span></a>
 						</div>
 						<div class="panel-body">
 							<ul id="suspension-list" class="list-group">
@@ -95,7 +95,7 @@
 									</div>
 
 									<div class="btn-group btn-group-xs edit-delete-group">
-										<a class="btn" v-bind:class="{'btn-default':suspensionEditId!=susp.id, 'btn-success':suspensionEditId==susp.id}" v-on:click.prevent="editModeSuspension"><span class="glyphicon" v-bind:class="{'glyphicon-pencil':suspensionEditId!=susp.id, 'glyphicon-floppy-disk':suspensionEditId==susp.id}"></span></a>
+										<a class="btn" v-bind:class="{'btn-default':suspensionEditId!=susp.id, 'btn-success':suspensionEditId==susp.id}" v-on:click.prevent="editModeSuspensionHdl"><span class="glyphicon" v-bind:class="{'glyphicon-pencil':suspensionEditId!=susp.id, 'glyphicon-floppy-disk':suspensionEditId==susp.id}"></span></a>
 										<a class="btn btn-danger" v-on:click.prevent="deleteSuspension"><span class="glyphicon glyphicon-trash"></span></a>
 									</div>
 								</li>
