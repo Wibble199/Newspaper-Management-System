@@ -53,8 +53,10 @@ var store = new Vuex.Store({
 		fetchCustomers: function(context) {
 			ajax("/customers").then(data => { // Async call to server to fetch data
 				if (data.success) {
-					for (var i = data.results.length; i--;)
+					for (var i = data.results.length; i--;) {
 						data.results[i].subs = null; // Add holder for the user's subscriptions
+						data.results[i].payments = null; // And for outstanding payments
+					}
 					context.commit('setCustomers', data.results);
 				}
 			});
@@ -118,6 +120,13 @@ var store = new Vuex.Store({
 				if (data.success)
 					customer.subs = data.results;
 			});
+		},
+
+		fetchCustomerPayments: function(context, customer) {
+			ajax("/payments/" + customer.id).then(data => {
+				if (data.success)
+					customer.payments = data.results;
+			})
 		}
 	}
 });
@@ -254,7 +263,8 @@ var Customers = {
 	data: function() { return {
 		selectedCustomerId: -1,
 		selectedCustomer: null,
-		searchText: ""
+		searchText: "",
+		editingPaymentDate: false, currentYearWeek: ""
 	}},
 
 	computed: {
@@ -273,9 +283,12 @@ var Customers = {
 		selectCustomer: function(e) {
 			this.selectedCustomerId = $(e.target).closest('tr').data('customer-id');
 			this.selectedCustomer = this.getCustomerById(this.selectedCustomerId);
+			this.editingPaymentDate = false;
 
 			if (this.selectedCustomer.subs === null)
-			 	store.dispatch('fetchCustomerSubs', this.selectedCustomer); // Lazy-load the customer's subscriptions
+				store.dispatch('fetchCustomerSubs', this.selectedCustomer); // Lazy-load the customer's subscriptions
+			if (this.selectedCustomer.payments === null)
+				store.dispatch('fetchCustomerPayments', this.selectedCustomer); // Lazy-load outstanding payments
 		},
 
 		getCustomerById: function(id) {
@@ -283,6 +296,36 @@ var Customers = {
 				if (customer.id == id)
 					return customer;
 			return null;
+		},
+
+		editPaymentDate: function(id) {
+			this.editingPaymentDate = true;
+			this.currentYearWeek = this.selectedCustomer.latest_payment;
+		},
+
+		savePaymentDate: function(id) {
+			if (/^\d{4}-\d{2}$/.test(this.currentYearWeek)) {
+				var weekInput = $('[data-week-input]').attr("disabled", true);
+				var thisVue = this;
+				ajax({
+					url: "/payments/" + this.selectedCustomerId,
+					method: "PUT",
+					data: $.param({week: this.currentYearWeek})
+
+				}).then(function(d) {
+					if (d.success) {
+						thisVue.editingPaymentDate = false;
+						thisVue.selectedCustomer.latest_payment = thisVue.currentYearWeek;
+						store.dispatch('fetchCustomerPayments', thisVue.selectedCustomer); // Refresh outstanding payments
+					} else throw "Fail";
+
+				}).catch(function(err) {
+					messageBox({title: "Error", text: "Failed to update the latest payment for this customer."});
+					weekInput.attr("disabled", "false");
+				});
+
+			} else
+				messageBox({title: "Invalid", text: "Please enter a valid ISO week. (YYYY-WW)"});
 		}
 	}
 };

@@ -320,6 +320,41 @@ var dbInterface = module.exports = {
 		}
 	},
 
+	// ---------------- //
+	// Payment related //
+	// -------------- //
+	payments: {
+		/**
+		 * Fetch all payments. Returns a promise that resolves with results or rejects with error.
+		 * @returns {Promise}
+		 */
+		get: function() { return asyncQuery("SELECT * FROM payments"); },
+
+		/**
+		 * Return the amount a customer owes in unpaid subscriptions, grouped by week.
+		 * Returns a promise that resolves the week and amount (or null if up to date with payments) or rejects with error.
+		 * @param {number} customer The customer ID
+		 * @returns {Promise}
+		 */
+		getUnpaidFees: function(customer) {
+			return asyncQuery(queryNamedParams(loadedQueries.calculateUnpaidPayments, {customer}));
+		},
+
+		/**
+		 * Updates a customer's latest payment date with the one provided (YYYY-WW)
+		 * @param {number} customer The customer's ID
+		 * @param {string} newVal The new week (YYYY-WW)
+		 * @returns {Promise}
+		 */
+		update: function(customer, newVal) {
+			if (!/^\d{4}-\d{2}$/.test(newVal)) return Promise.reject(new ValidationError("Invalid week format"));
+			return asyncQuery("UPDATE customers SET latest_payment = ? WHERE id = ?", [newVal, customer]).then(results => {
+				if (results.affectedRows != 1)
+					throw new ValidationError("Failed to update customer's payment date");
+			});
+		}
+	},
+
 	// -------------------------- //
 	// Generation-only functions //
 	// ------------------------ //

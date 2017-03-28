@@ -170,6 +170,32 @@ module.exports = function(app) {
 		);
 	});
 
+	// ------------------- //
+	// PAYMENT END POINTS //
+	// ----------------- //
+	app.get("/payments", requireAuth((req, res) => {
+		db.payments.getUnpaidFees(req.user.id).then(
+			results => res.json({success: true, results}),
+			err => res.json({success: false, err})
+		);
+	}));
+
+	// Admin-only for any customer
+	app.get("/payments/:customer_id", requireAdmin((req, res) => {
+		db.payments.getUnpaidFees(req.params.customer_id).then(
+			results => res.json({success: true, results}),
+			err => res.json({success: false, err})
+		);
+	}));
+
+	// Update payment date for a customer
+	app.put("/payments/:customer_id", requireAdmin((req, res) => {
+		db.payments.update(req.params.customer_id, req.body.week).then(
+			_ => res.json({success: true}),
+			err => res.json({success: false, err})
+		)
+	}));
+
 	// --------------------------- //
 	// GENERATING-ONLY END POINTS //
 	// ------------------------- //

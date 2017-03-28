@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.5.4.1deb2ubuntu2
+-- version 4.6.0
 -- http://www.phpmyadmin.net
 --
--- Host: localhost
--- Generation Time: Mar 20, 2017 at 01:17 PM
--- Server version: 5.7.17-0ubuntu0.16.04.1
--- PHP Version: 7.0.15-0ubuntu0.16.04.2
+-- Host: 127.0.0.1:3306
+-- Generation Time: Mar 27, 2017 at 11:55 PM
+-- Server version: 5.6.29
+-- PHP Version: 7.0.5
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -31,6 +31,7 @@ CREATE TABLE `customers` (
   `address4` varchar(64) DEFAULT NULL,
   `postcode` varchar(8) NOT NULL,
   `contact_num` varchar(11) NOT NULL,
+  `latest_payment` varchar(7) NOT NULL DEFAULT '2017-01',
   `is_admin` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -43,6 +44,7 @@ CREATE TABLE `customers` (
 CREATE TABLE `publications` (
   `id` int(11) UNSIGNED NOT NULL,
   `name` varchar(32) NOT NULL,
+  `price` double(3,2) NOT NULL,
   `color` varchar(6) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

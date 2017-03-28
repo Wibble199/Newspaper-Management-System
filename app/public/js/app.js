@@ -7,6 +7,7 @@ var vm = new Vue({
 		publications: [],
 		subscriptions: [],
 		suspensions: [],
+		payments: [],
 
 		// Client only data
 		subscriptionEditId: -1,
@@ -18,6 +19,13 @@ var vm = new Vue({
 	computed: {
 		publicationsTomorrow: function() {
 			return 1;
+		},
+	
+		paymentTotal: function() {
+			if (!this.payments) return 0;
+			var s = 0;
+			for (var i = this.payments.length; i--;) s += this.payments[i].total;
+			return s;
 		}
 	},
 
@@ -26,6 +34,7 @@ var vm = new Vue({
 		this.fetchPublications();
 		this.fetchSubscriptions();
 		this.fetchSuspensions();
+		this.fetchPayments();
 	},
 
 	methods: {
@@ -291,6 +300,14 @@ var vm = new Vue({
 			}
 		},
 
+		// ---------------- //
+		// Payment methods //
+		// -------------- //
+		fetchPayments: function() {
+			var thisVue = this;
+			ajax('/payments').then(function(d) { thisVue.$data.payments = d.results; });
+		},
+
 		// ----- //
 		// Misc //
 		// --- //
@@ -304,6 +321,11 @@ var vm = new Vue({
 				html += (i == 0 ? "" : " " /*Add a space on all but first*/) + "<" + tagName + ">" + days[i] + "</" + tagName + ">";
 			}
 			return html;
+		},
+
+		// Simply shows the payments modal
+		paymentDetailsBtnHdlr: function() {
+			$('#payments-modal').modal('show');
 		}
 	}
 });
@@ -359,19 +381,6 @@ function getSubscriptionFormVal() {
 	model.delivery_days = deliveryDaysGet();
 
 	return model;
-}
-
-function fullDateStr(d) {
-	var dateSuffix = "th";
-	switch(d.getDate()) {
-		case 1: case 21: case 31: dateSuffix = "st"; break;
-		case 2: case 22: dateSuffix = "nd"; break;
-		case 3: case 23: dateSuffix = "rd"; break;
-	}
-
-	return d.getDate() + "<sup>" + dateSuffix + "</sup> " +
-		["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()] + " " +
-		d.getFullYear();
 }
 
 // Functions to get and set value for the delivery days checkboxes
