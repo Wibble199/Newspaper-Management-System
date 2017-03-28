@@ -189,6 +189,14 @@ module.exports = function(app) {
 		);
 	}));
 
+	// Update payment date for a customer
+	app.put("/payments/:customer_id", requireAdmin((req, res) => {
+		db.payments.update(req.params.customer_id, req.body.week).then(
+			_ => res.json({success: true}),
+			err => res.json({success: false, err})
+		)
+	}));
+
 	// --------------------------- //
 	// GENERATING-ONLY END POINTS //
 	// ------------------------- //

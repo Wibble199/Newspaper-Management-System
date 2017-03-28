@@ -253,15 +253,31 @@
 						<!--<a href="#" class="btn btn-xs btn-default pull-right"><span class="glyphicon glyphicon-pencil"></span></a>-->
 					</div>
 					<div class="panel-body">
-						<div class="row" v-if="selectedCustomer">
-							<div class="col-md-4"><strong>Address:</strong></div>
-							<address class="col-md-8" v-html="[selectedCustomer.address1, selectedCustomer.address2, selectedCustomer.address3, selectedCustomer.address4, selectedCustomer.postcode].filter(function(e){return e!='';}).join('<br>')"></address>
-						</div>
-						<div class="row" v-if="selectedCustomer">
-							<div class="col-md-4"><strong>Contact:</strong></div>
-							<div class="col-md-8">
-								{{selectedCustomer.email}}<br>
-								{{selectedCustomer.contact_num || "Phone not provided"}}<br>
+						<div v-if="selectedCustomer">
+							<div class="row">
+								<div class="col-md-4"><strong>Address:</strong></div>
+								<address class="col-md-8" v-html="[selectedCustomer.address1, selectedCustomer.address2, selectedCustomer.address3, selectedCustomer.address4, selectedCustomer.postcode].filter(function(e){return e!='';}).join('<br>')"></address>
+							</div>
+							<div class="row" style="margin-bottom:21px">
+								<div class="col-md-4"><strong>Contact:</strong></div>
+								<div class="col-md-8">
+									{{selectedCustomer.email}}<br>
+									{{selectedCustomer.contact_num || "Phone not provided"}}<br>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-4"><strong>Latest payment:</strong></div>
+								<div class="col-md-8" v-if="editingPaymentDate">
+									<div class="input-group">
+										<input type="text" class="form-control" placeholder="YYYY-WW" pattern="^\d{4}-\d{2}$" v-model="currentYearWeek" data-week-input required>
+										<span class="input-group-btn">
+											<button class="btn btn-secondary" type="button" v-on:click="savePaymentDate"><span class="glyphicon glyphicon-floppy-disk"></span></button>
+										</span>
+									</div>
+								</div>
+								<div class="col-md-8" v-else>
+									{{selectedCustomer.latest_payment}} <button type="button" class="btn btn-xs btn-default pull-right" v-on:click="editPaymentDate"><span class="glyphicon glyphicon-pencil"></span></button>
+								</div>
 							</div>
 						</div>
 						<span v-else>Select a customer from the left to view their details.</span>

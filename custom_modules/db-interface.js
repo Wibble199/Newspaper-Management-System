@@ -338,6 +338,20 @@ var dbInterface = module.exports = {
 		 */
 		getUnpaidFees: function(customer) {
 			return asyncQuery(queryNamedParams(loadedQueries.calculateUnpaidPayments, {customer}));
+		},
+
+		/**
+		 * Updates a customer's latest payment date with the one provided (YYYY-WW)
+		 * @param {number} customer The customer's ID
+		 * @param {string} newVal The new week (YYYY-WW)
+		 * @returns {Promise}
+		 */
+		update: function(customer, newVal) {
+			if (!/^\d{4}-\d{2}$/.test(newVal)) return Promise.reject(new ValidationError("Invalid week format"));
+			return asyncQuery("UPDATE customers SET latest_payment = ? WHERE id = ?", [newVal, customer]).then(results => {
+				if (results.affectedRows != 1)
+					throw new ValidationError("Failed to update customer's payment date");
+			});
 		}
 	},
 

@@ -254,7 +254,8 @@ var Customers = {
 	data: function() { return {
 		selectedCustomerId: -1,
 		selectedCustomer: null,
-		searchText: ""
+		searchText: "",
+		editingPaymentDate: false, currentYearWeek: ""
 	}},
 
 	computed: {
@@ -273,6 +274,7 @@ var Customers = {
 		selectCustomer: function(e) {
 			this.selectedCustomerId = $(e.target).closest('tr').data('customer-id');
 			this.selectedCustomer = this.getCustomerById(this.selectedCustomerId);
+			this.editingPaymentDate = false;
 
 			if (this.selectedCustomer.subs === null)
 			 	store.dispatch('fetchCustomerSubs', this.selectedCustomer); // Lazy-load the customer's subscriptions
@@ -283,6 +285,35 @@ var Customers = {
 				if (customer.id == id)
 					return customer;
 			return null;
+		},
+
+		editPaymentDate: function(id) {
+			this.editingPaymentDate = true;
+			this.currentYearWeek = this.selectedCustomer.latest_payment;
+		},
+
+		savePaymentDate: function(id) {
+			if (/^\d{4}-\d{2}$/.test(this.currentYearWeek)) {
+				var weekInput = $('[data-week-input]').attr("disabled", true);
+				var thisVue = this;
+				ajax({
+					url: "/payments/" + this.selectedCustomerId,
+					method: "PUT",
+					data: $.param({week: this.currentYearWeek})
+
+				}).then(function(d) {
+					if (d.success) {
+						thisVue.editingPaymentDate = false;
+						thisVue.selectedCustomer.latest_payment = thisVue.currentYearWeek
+					} else throw "Fail";
+
+				}).catch(function(err) {
+					messageBox({title: "Error", text: "Failed to update the latest payment for this customer."});
+					weekInput.attr("disabled", "false");
+				});
+
+			} else
+				messageBox({title: "Invalid", text: "Please enter a valid ISO week. (YYYY-WW)"});
 		}
 	}
 };
