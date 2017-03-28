@@ -247,7 +247,19 @@ var vm = new Vue({
 		},
 
 		deleteSuspension: function(e) {
-			
+			var targetLi = $(e.currentTarget).closest('[data-suspension-id]');
+			var suspensionId = targetLi.data('suspension-id'), suspensionIndex = targetLi.index();
+			var thisVue = this;
+
+			if (confirm("Are you sure you wish to delete this suspension?")) {
+				ajax({
+					url: "/suspensions/" + suspensionId,
+					method: "DELETE"
+				}).then(function(d) {
+					if (d.success)
+						thisVue.$data.suspensions.splice(suspensionIndex, 1);
+				});
+			}
 		},
 
 		// ----- //
