@@ -15,6 +15,12 @@ var vm = new Vue({
 		endDateDisabled: true
 	},
 
+	computed: {
+		publicationsTomorrow: function() {
+			return 1;
+		}
+	},
+
 	mounted: function() {
 		this.fetchUser();
 		this.fetchPublications();
@@ -89,16 +95,19 @@ var vm = new Vue({
 		},
 
 		// Handler for delete button to delete the clicked subscription
-		deleteSubscription: function(e) {
+		deleteSubscription: function(id) {
 			var thisVue = this;
-			var targetLi = $(e.currentTarget).closest('[data-subscription-id]');
-			var subscriptionId = targetLi.data('subscription-id'), subscriptionIndex = targetLi.index();
+			var targetLi = $('[data-subscription-id="' + id + '"]'), subscriptionIndex = -1;
 
-			if (confirm("Are you sure?")) {
+			// Find the correct index that this subscription occupies
+			for (var i = 0; sub = thisVue.$data.subscriptions[i]; i++)
+				if (sub.id == id) subscriptionIndex = i;
+
+			if (confirm("Are you sure you wish to delete this subscription?")) {
 				targetLi.loadingOverlay(true);
 
 				ajax({
-					url: '/subscriptions/' + subscriptionId,
+					url: '/subscriptions/' + id,
 					method: "DELETE"
 
 				}).then(function(d) {

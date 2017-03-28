@@ -41,8 +41,11 @@
 			<!-- Alert container -->
 			<div class="row" style="margin-top:16px;">
 				<div class="col-md-6">
-					<div class="alert alert-success">
-						<strong>You are due to receive 2 publications tomorrow</strong>
+					<div class="alert alert-warning" v-if="publicationsTomorrow == 0">
+						<strong>You aren't due to receive any publications tomorrow</strong>
+					</div>
+					<div class="alert alert-success" v-else>
+						<strong>You are due to receive {{publicationsTomorrow}} publication{{publicationsTomorrow == 1 ? "" : "s"}} tomorrow</strong>
 					</div>
 				</div>
 				<div class="col-md-6">
