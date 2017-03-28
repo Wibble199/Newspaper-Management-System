@@ -1,6 +1,12 @@
 .add-button {
 	position: relative;
-	top: -20px;
+	top: -22px;
+	right: -8px;
+}
+
+.add-button .glyphicon {
+	top: 2px;
+	left: 1px;
 }
 
 .edit-delete-group {
