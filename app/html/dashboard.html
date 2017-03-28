@@ -228,6 +228,7 @@
 							<th>Name</th>
 							<th>Address</th>
 							<th>Post Code</th>
+							<th>Last payment</th>
 						</tr>
 						<tr class="warning" v-if="searchText">
 							<td colspan="4"><span class="glyphicon glyphicon-exclamation-sign"></span> List is currently filtered</td>
@@ -239,6 +240,7 @@
 							<td>{{cust.name}}</td>
 							<td>{{cust.address1}}</td>
 							<td>{{cust.postcode}}</td>
+							<td><abbr v-bind:title="weekToDaterange(cust.latest_payment,false)">{{cust.latest_payment}}</abbr></td>
 						</tr>
 					</tbody>
 				</table>

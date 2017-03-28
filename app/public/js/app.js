@@ -304,19 +304,6 @@ function getSubscriptionFormVal() {
 	return model;
 }
 
-function fullDateStr(d) {
-	var dateSuffix = "th";
-	switch(d.getDate()) {
-		case 1: case 21: case 31: dateSuffix = "st"; break;
-		case 2: case 22: dateSuffix = "nd"; break;
-		case 3: case 23: dateSuffix = "rd"; break;
-	}
-
-	return d.getDate() + "<sup>" + dateSuffix + "</sup> " +
-		["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()] + " " +
-		d.getFullYear();
-}
-
 // Functions to get and set value for the delivery days checkboxes
 function deliveryDaysGet() {
 	var sum = 0;
@@ -331,27 +318,4 @@ function deliveryDaysSet(val) {
 		var $this = $(this), thisVal = $(this).val();
 		$this.prop('checked', (val & thisVal) == thisVal);
 	});
-}
-
-function iso8601Week(w, y) {
-    var simple = new Date(y, 0, 1 + (w - 1) * 7);
-    var dow = simple.getDay();
-    var ISOweekStart = simple;
-    if (dow <= 4)
-        ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
-    else
-        ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
-    return ISOweekStart;
-}
-
-// Calculates a date range for a given week year and number
-// week in format "YYYY-MM"
-function weekToDaterange(week) {
-	week = week.split("-");
-	var y = +week[0], w = +week[1];
-	var d = iso8601Week(w, y);
-	d.setDate(d.getDate() - 1); // Since we start at Sunday because I'm an idiot, take one off that day
-	var startStr = fullDateStr(d);
-	d.setDate(d.getDate() + 6);
-	return startStr + " &ndash; " + fullDateStr(d);
 }
