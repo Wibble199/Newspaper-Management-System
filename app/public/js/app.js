@@ -270,7 +270,7 @@ var vm = new Vue({
 				}).catch(function(err) {
 
 					targetLi.loadingOverlay(false);
-					alert(typeof err.invalidFields == "string" ? err.invalidFields : err);
+					messageBox({title: "Error", text: typeof err.invalidFields == "string" ? err.invalidFields : err});
 					console.error(err);
 				})
 			}
@@ -282,22 +282,32 @@ var vm = new Vue({
 			var suspensionId = targetLi.data('suspension-id'), suspensionIndex = targetLi.index();
 			var thisVue = this;
 
-			if (confirm("Are you sure you wish to delete this suspension?")) {
-				ajax({
-					url: "/suspensions/" + suspensionId,
-					method: "DELETE"
-					
-				}).then(function(d) {
-					if (d.success) {
-						thisVue.$data.suspensions.splice(suspensionIndex, 1);
-						reloadMonthlyCurrent();
-					} else
-						throw d.err;
+			messageBox({
+				title: "Confirm delete",
+				text: "Are you sure you wish to delete this subscription?",
+				buttons: [
+					{label: "Don't delete", type: "default"},
+					{label: "Delete", type: "danger"}
+				],
+				callback: function(btnIndex) {
+					if (btnIndex == 1) { // If user clicked to delete
+						ajax({
+							url: "/suspensions/" + suspensionId,
+							method: "DELETE"
+							
+						}).then(function(d) {
+							if (d.success) {
+								thisVue.$data.suspensions.splice(suspensionIndex, 1);
+								reloadMonthlyCurrent();
+							} else
+								throw d.err;
 
-				}).catch(function(err) {
-					alert("Failed to delete suspension: " + err);
-				});
-			}
+						}).catch(function(err) {
+							messageBox({title: "Error", text: "Failed to delete suspension: " + err});
+						});
+					}
+				}
+			});
 		},
 
 		// ---------------- //
