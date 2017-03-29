@@ -387,7 +387,7 @@ var vm = new Vue({
  */
 function today() {
 	var dt = new Date();
-	var m = dt.getMonth(), d = dt.getDate();
+	var m = dt.getMonth() + 1, d = dt.getDate();
 	return dt.getFullYear() + "-" + (m < 10 ? "0" : "") + m + "-" + (d < 10 ? "0" : "") + d;
 }
 
