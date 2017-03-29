@@ -20,9 +20,13 @@ INNER JOIN ( # Get 499 into the past. Adapted from http://stackoverflow.com/a/15
 INNER JOIN publications AS pubs
 	ON subs.publication_id = pubs.id
 
+LEFT JOIN suspensions AS susps # Join onto a suspension if one overlaps (otherwise it'll be null)
+	ON susps.start_date <= days.date AND susps.end_date >= days.date
+	AND susps.customer_id = cust.id
+
 WHERE cust.id = ::customer
 	AND days.date >= DATE_ADD(MAKEDATE(LEFT(cust.latest_payment, 4), 1), INTERVAL right(cust.latest_payment, 2) WEEK) # Ensure dates only later than the last paid day
 	AND subs.start_date <= days.date AND (subs.end_date IS NULL OR subs.end_date >= days.date) # Take startand end date into account
-	# TODO: Take suspensions into account
+	AND susps.id IS NULL # Where no suspension overlaps
 
 GROUP BY DATE_FORMAT(days.date, "%X-%V");
