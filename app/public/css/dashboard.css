@@ -68,6 +68,33 @@ tfoot {
 	font-size: 1.2em;
 }
 
+#route-map {
+	height: 300px;
+	margin: -15px -15px 0;
+	border-bottom: 1px solid #2C3E50;
+}
+
+#route-directions {
+	max-height: 359px;
+	margin: 0 -15px -15px;
+	overflow-y: auto;
+}
+
+/* Route directions display */
+.adp-placemark, .adp-step, .adp-substep {
+	border: none !important;
+
+}
+.adp-placemark tr {
+	background-color: #2C3E50;
+	color: #FFF;
+}
+
+img.adp-marker {
+	height: 31px;
+	margin: 4px 14px;
+}
+
 /* Publication table color blocks */
 .publication-color-block {
     height: 1em;
