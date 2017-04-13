@@ -1,12 +1,14 @@
 {
-  "name": "prototype",
-  "version": "0.0.1",
-  "description": "",
+  "name": "ormskirk-newspapers",
+  "version": "0.7.1",
+  "description": "A prototype application for `Ormskirk Newspapers` that allows customers to manage their publication subscriptions and allows employees to view basic statistics on the subscriptions and view routes for delivery drivers.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "author": "Will Bennion",
+  "repository": "git@bitbucket.org:wibble199/newspaper-management.git",
+  "keywords": ["management", "dashboard"],
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.17.0",
