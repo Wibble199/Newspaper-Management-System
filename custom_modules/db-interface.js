@@ -337,7 +337,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		getUnpaidFees: function(customer) {
-			return asyncQuery(queryNamedParams(loadedQueries.calculateUnpaidPayments, {customer}));
+			return asyncQueryNamed(loadedQueries.calculateUnpaidPayments, {customer});
 		},
 
 		/**
@@ -368,7 +368,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		calendarEvents: function(customerId, year, month) {
-			return asyncQuery(queryNamedParams(loadedQueries.generateCalendarEvents, {customerId, year, month}));
+			return asyncQueryNamed(loadedQueries.generateCalendarEvents, {customerId, year, month});
 		},
 
 		/**
@@ -378,7 +378,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		deliveryList: function(day) {
-			return asyncQuery(queryNamedParams(loadedQueries.generateDeliveryList, {day}));
+			return asyncQueryNamed(loadedQueries.generateDeliveryList, {day});
 		},
 
 		/**
@@ -413,7 +413,7 @@ var dbInterface = module.exports = {
 	// ------------------------ //
 	metrics: {
 		weeklySubsByDay: function(day) {
-			return asyncQuery(queryNamedParams(loadedQueries.weeklySubsByDay, {day})).then(
+			return asyncQueryNamed(loadedQueries.weeklySubsByDay, {day}).then(
 				results => {
 					var newData = {};
 					results.forEach(el => {
@@ -468,12 +468,13 @@ function ValidationError(err) {
 /**
  * Takes a query and will replace any instances of `::name` with the escaped value of `name` from the parameters object. `name` can be made up of letters, numbers, underscores (_) and dashes (-).
  * Note: Only normal escaping is currently supported (like when using `?` with the mysql library) not identifier escaping (like `??` with the mysql library) - so this cannot be used with table or column names.
- * @param {string} q The query to escape
- * @param {object} params The parameters for the query
+ * @param {string} query The query to escape
+ * @param {object} queryParams The parameters for the query
  * @return {string}
  */
-function queryNamedParams(q, params) {
-	return q.replace(/::([A-Za-z0-9_-]+)/g, function(_, pName) {
-		return db.escape(params[pName]);
+function asyncQueryNamed(query, queryParams) {
+	var newQuery = query.replace(/::([A-Za-z0-9_-]+)/g, function(_, pName) {
+		return db.escape(queryParams[pName]);
 	});
+	return asyncQuery(newQuery);
 }
