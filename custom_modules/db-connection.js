@@ -31,5 +31,37 @@ connection.connect((err) => {
 		console.info(`Connected to MySQL server on ${serversettings.db_connection.host}:${serversettings.db_connection.port}`);
 });
 
+/**
+ * Performs a query on the database and returns a promise which will resolve with the result of the query or, if an error occurs, will reject with that error.
+ * @param {string} query The query to perform on the database
+ * @param {object | *[]} [queryParams] Any parameters to be passed to the query (see https://www.npmjs.com/package/mysql#performing-queries)
+ * @returns {Promise}
+ */
+function asyncQuery(query, queryParams) {
+	return new Promise(function(resolve, reject) {
+		console.log("SQL > " + connection.query(query, queryParams, (err, results) => {
+			if (err) reject(err);
+			else resolve(results);
+		}).sql);
+	});
+}
+
+/**
+ * Takes a query and will replace any instances of `::name` with the escaped value of `name` from the parameters object. `name` can be made up of letters, numbers, underscores (_) and dashes (-).
+ * Note: Only normal escaping is currently supported (like when using `?` with the mysql library) not identifier escaping (like `??` with the mysql library) - so this cannot be used with table or column names.
+ * @param {string} query The query to escape
+ * @param {object} queryParams The parameters for the query
+ * @return {string}
+ */
+function asyncQueryNamed(query, queryParams) {
+	var newQuery = query.replace(/::([A-Za-z0-9_-]+)/g, function(_, pName) {
+		return connection.escape(queryParams[pName]);
+	});
+	return asyncQuery(newQuery);
+}
+
 // Exports
-module.exports = connection;
+module.exports = {
+	asyncQuery,
+	asyncQueryNamed
+};

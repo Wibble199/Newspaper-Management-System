@@ -22,7 +22,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		getById: function(id) {
-			return asyncQuery("SELECT * FROM customers WHERE customers.id = ?", [id]).then(results => {
+			return db.asyncQuery("SELECT * FROM customers WHERE customers.id = ?", [id]).then(results => {
 				if (results.length != 1)
 					throw new Error("No user found with id " + id);
 				delete results[0].password; // Delete the password property
@@ -38,7 +38,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		checkLogin: function(email, pwd) {
-			return asyncQuery("SELECT * FROM customers WHERE LOWER(customers.email) = ?", [email.toLowerCase()]).then(results => { // Find the user from email
+			return db.asyncQuery("SELECT * FROM customers WHERE LOWER(customers.email) = ?", [email.toLowerCase()]).then(results => { // Find the user from email
 				if (results.length != 1) // No user with email was found
 					throw new Error("Invalid login credentials");
 
@@ -64,7 +64,7 @@ var dbInterface = module.exports = {
 
 			password = bcrypt.hashSync(password, 10); // Hash the PW
 
-			return asyncQuery("UPDATE customers SET password = ? WHERE customers.id = ?", [password, id]).then(results => {
+			return db.asyncQuery("UPDATE customers SET password = ? WHERE customers.id = ?", [password, id]).then(results => {
 				if (results.affectedRows != 1)
 					throw new Error("No user found with id " + id);
 			});
@@ -80,7 +80,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		get: function() {
-			return asyncQuery("SELECT * FROM customers").then(results => {
+			return db.asyncQuery("SELECT * FROM customers").then(results => {
 				results.forEach(customer => delete customer.password); // Remove the passwords
 				return results;
 			});
@@ -96,7 +96,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		get: function() {
-			return asyncQuery("SELECT s.*, p.name, p.color FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id");
+			return db.asyncQuery("SELECT s.*, p.name, p.color FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id");
 		},
 
 		/**
@@ -105,7 +105,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		getById: function(id) {
-			return asyncQuery("SELECT s.*, p.name, p.color FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.id = ?", [id]).then(results => {
+			return db.asyncQuery("SELECT s.*, p.name, p.color FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.id = ?", [id]).then(results => {
 				if (results.length != 1)
 					throw new Error("No subscription found with that ID");
 				return results[0];
@@ -118,7 +118,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		getByUserId: function(id) {
-			return asyncQuery("SELECT s.*, p.name, p.color FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id]);
+			return db.asyncQuery("SELECT s.*, p.name, p.color FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id]);
 		},
 
 		/**
@@ -127,7 +127,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		getByUserIdUnique: function(id) {
-			return asyncQuery("SELECT p.id as id, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id]);
+			return db.asyncQuery("SELECT p.id as id, p.name FROM subscriptions AS s INNER JOIN publications AS p ON s.publication_id = p.id WHERE s.customer_id = ?", [id]);
 		},
 
 		/**
@@ -149,14 +149,14 @@ var dbInterface = module.exports = {
 			if (err) return Promise.reject(new ValidationError(err));
 
 			// First check if this customer is already subscribed to this publication during these dates
-			return asyncQuery("SELECT id FROM subscriptions WHERE customer_id = ? AND publication_id = ? AND start_date < ? AND end_date > ?", [data.customer_id, data.publication_id, data.end_date, data.start_date]).then(results => {
+			return db.asyncQuery("SELECT id FROM subscriptions WHERE customer_id = ? AND publication_id = ? AND start_date < ? AND end_date > ?", [data.customer_id, data.publication_id, data.end_date, data.start_date]).then(results => {
 				if (results.length != 0) 
 					throw new ValidationError("Overlapping dates with existing subscription"); // If an overlapping identical publication was found throw an error
 				// Else if no overlap was found - go ahead to the next query
 				
 			}).then(() => 
 				// For the parameters to pass into the query, reduce to only contain the ones in the array (if extra stuff it in the object the query would be invalid)
-				asyncQuery("INSERT INTO subscriptions SET ?", reducedCopy(data, ["customer_id", "publication_id", "start_date", "end_date", "delivery_days"]))
+				db.asyncQuery("INSERT INTO subscriptions SET ?", reducedCopy(data, ["customer_id", "publication_id", "start_date", "end_date", "delivery_days"]))
 
 			).then(results => results.insertId); // On query successful finish return the newly created item's id (will pass error forwards)
 		},
@@ -180,14 +180,14 @@ var dbInterface = module.exports = {
 
 			if (err) return Promise.reject(new ValidationError(err));
 
-			return asyncQuery("SELECT id FROM subscriptions WHERE id != ? AND customer_id = ? AND publication_id = ? AND start_date < ? AND end_date > ?", [id, data.customer_id, data.publication_id, data.end_date, data.start_date]).then(results => {
+			return db.asyncQuery("SELECT id FROM subscriptions WHERE id != ? AND customer_id = ? AND publication_id = ? AND start_date < ? AND end_date > ?", [id, data.customer_id, data.publication_id, data.end_date, data.start_date]).then(results => {
 				if (results.length != 0)
 					throw new ValidationError("Overlapping dates with existing subscription"); // If an overlapping identical publication was found throw an error
 			
 			}).then(() =>
 				// For the array of values for the query, the reducedCopied object will be used for SET and the id will be used for... well... id
 				// We get something like: UPDATE subscriptions `SET customer_id = 1, publication_id = 2 ...<ETC>... WHERE id = 5` which is what we need
-				asyncQuery("UPDATE subscriptions SET ? WHERE id = ?", [reducedCopy(data, ["customer_id", "publication_id", "start_date", "end_date", "delivery_days"]), id])
+				db.asyncQuery("UPDATE subscriptions SET ? WHERE id = ?", [reducedCopy(data, ["customer_id", "publication_id", "start_date", "end_date", "delivery_days"]), id])
 
 			).then(results => {
  				if (results.affectedRows != 1) // If 1 row alone was updated, the operation was successful
@@ -202,7 +202,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		delete: function(id) {
-			return asyncQuery("DELETE FROM subscriptions WHERE id = ?", [id]).then(results => {
+			return db.asyncQuery("DELETE FROM subscriptions WHERE id = ?", [id]).then(results => {
 				if (results.affectedRows != 1) // If any less than 1 row was affected, the operation was unsuccessful
 					throw new ValidationError("Failed to delete row with given ID");
 			});
@@ -218,7 +218,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		get: function() {
-			return asyncQuery("SELECT * FROM suspensions");
+			return db.asyncQuery("SELECT * FROM suspensions");
 		},
 
 		/**
@@ -227,7 +227,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		getById: function(id) {
-			return asyncQuery("SELECT * FROM suspensions WHERE id = ?", [id]).then(results => {
+			return db.asyncQuery("SELECT * FROM suspensions WHERE id = ?", [id]).then(results => {
 				if (results.length != 1)
 					throw new Error("No suspension found with that ID");
 				return results[0];
@@ -240,7 +240,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		getByUserId: function(id) {
-			return asyncQuery("SELECT * FROM suspensions WHERE customer_id = ?", [id]);
+			return db.asyncQuery("SELECT * FROM suspensions WHERE customer_id = ?", [id]);
 		},
 
 		/**
@@ -258,11 +258,11 @@ var dbInterface = module.exports = {
 
 			if (err) return Promise.reject(new ValidationError(err));
 
-			return asyncQuery("SELECT id FROM suspensions WHERE customer_id = ? AND start_date < ? AND end_date > ?", [data.customer_id, data.end_date, data.start_date]).then(results => {
+			return db.asyncQuery("SELECT id FROM suspensions WHERE customer_id = ? AND start_date < ? AND end_date > ?", [data.customer_id, data.end_date, data.start_date]).then(results => {
 				if (results.length > 0)
 					throw new ValidationError("A suspension overlapping these dates for this customer already exists");
 			}).then(() =>
-				asyncQuery("INSERT INTO suspensions SET ?", reducedCopy(data, ["customer_id", "start_date", "end_date"]))
+				db.asyncQuery("INSERT INTO suspensions SET ?", reducedCopy(data, ["customer_id", "start_date", "end_date"]))
 			).then(
 				results => results.insertId
 			);
@@ -283,11 +283,11 @@ var dbInterface = module.exports = {
 
 			if (err) return Promise.reject(new ValidationError(err));
 
-			return asyncQuery("SELECT id FROM suspensions WHERE id != ? AND customer_id = ? AND start_date < ? AND end_date > ?", [id, data.customer_id, data.end_date, data.start_date]).then(results => {
+			return db.asyncQuery("SELECT id FROM suspensions WHERE id != ? AND customer_id = ? AND start_date < ? AND end_date > ?", [id, data.customer_id, data.end_date, data.start_date]).then(results => {
 				if (results.length > 0)
 					throw new ValidationError("A suspension overlapping these dates for this customer already exists");
 			}).then(() =>
-				asyncQuery("UPDATE suspensions SET ? WHERE id = ?", [reducedCopy(data, ["customer_id", "start_date", "end_date"]), id])
+				db.asyncQuery("UPDATE suspensions SET ? WHERE id = ?", [reducedCopy(data, ["customer_id", "start_date", "end_date"]), id])
 			).then(results => {
 				if (results.affectedRows != 1)
 					throw new ValidationError("Failed to update row with that ID");
@@ -300,7 +300,7 @@ var dbInterface = module.exports = {
 		 * @param {number} id The ID of the suspension to attempt to delete
 		 */
 		delete: function(id) {
-			return asyncQuery("DELETE FROM suspensions WHERE id = ?", [id]).then(results => {
+			return db.asyncQuery("DELETE FROM suspensions WHERE id = ?", [id]).then(results => {
 				if (results.affectedRows != 1) // If any less than 1 row was affected, the operation was unsuccessful
 					throw new ValidationError("Failed to delete row with given ID");
 			});
@@ -316,7 +316,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		get: function() {
-			return asyncQuery("SELECT * FROM publications");
+			return db.asyncQuery("SELECT * FROM publications");
 		}
 	},
 
@@ -328,7 +328,7 @@ var dbInterface = module.exports = {
 		 * Fetch all payments. Returns a promise that resolves with results or rejects with error.
 		 * @returns {Promise}
 		 */
-		get: function() { return asyncQuery("SELECT * FROM payments"); },
+		get: function() { return db.asyncQuery("SELECT * FROM payments"); },
 
 		/**
 		 * Return the amount a customer owes in unpaid subscriptions, grouped by week.
@@ -337,7 +337,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		getUnpaidFees: function(customer) {
-			return asyncQueryNamed(loadedQueries.calculateUnpaidPayments, {customer});
+			return db.asyncQueryNamed(loadedQueries.calculateUnpaidPayments, {customer});
 		},
 
 		/**
@@ -348,7 +348,7 @@ var dbInterface = module.exports = {
 		 */
 		update: function(customer, newVal) {
 			if (!/^\d{4}-\d{2}$/.test(newVal)) return Promise.reject(new ValidationError("Invalid week format"));
-			return asyncQuery("UPDATE customers SET latest_payment = ? WHERE id = ?", [newVal, customer]).then(results => {
+			return db.asyncQuery("UPDATE customers SET latest_payment = ? WHERE id = ?", [newVal, customer]).then(results => {
 				if (results.affectedRows != 1)
 					throw new ValidationError("Failed to update customer's payment date");
 			});
@@ -368,7 +368,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		calendarEvents: function(customerId, year, month) {
-			return asyncQueryNamed(loadedQueries.generateCalendarEvents, {customerId, year, month});
+			return db.asyncQueryNamed(loadedQueries.generateCalendarEvents, {customerId, year, month});
 		},
 
 		/**
@@ -378,7 +378,7 @@ var dbInterface = module.exports = {
 		 * @returns {Promise}
 		 */
 		deliveryList: function(day) {
-			return asyncQueryNamed(loadedQueries.generateDeliveryList, {day});
+			return db.asyncQueryNamed(loadedQueries.generateDeliveryList, {day});
 		},
 
 		/**
@@ -413,7 +413,7 @@ var dbInterface = module.exports = {
 	// ------------------------ //
 	metrics: {
 		weeklySubsByDay: function(day) {
-			return asyncQueryNamed(loadedQueries.weeklySubsByDay, {day}).then(
+			return db.asyncQueryNamed(loadedQueries.weeklySubsByDay, {day}).then(
 				results => {
 					var newData = {};
 					results.forEach(el => {
@@ -443,38 +443,9 @@ function reducedCopy(obj, props) {
 	return newObj;
 }
 
-/**
- * Performs a query on the database and returns a promise which will resolve with the result of the query or, if an error occurs, will reject with that error.
- * @param {string} query The query to perform on the database
- * @param {object | *[]} [queryParams] Any parameters to be passed to the query (see https://www.npmjs.com/package/mysql#performing-queries)
- * @returns {Promise}
- */
-function asyncQuery(query, queryParams) {
-	return new Promise(function(resolve, reject) {
-		console.log("SQL > " + db.query(query, queryParams, (err, results) => {
-			if (err) reject(err);
-			else resolve(results);
-		}).sql);
-	});
-}
-
 // ValidationError class
 // TODO: BETTER ERROR HANDLING!!!!
 function ValidationError(err) {
 	this.code = "ERR_VALIDATION";
 	this.invalidFields = err;
-}
-
-/**
- * Takes a query and will replace any instances of `::name` with the escaped value of `name` from the parameters object. `name` can be made up of letters, numbers, underscores (_) and dashes (-).
- * Note: Only normal escaping is currently supported (like when using `?` with the mysql library) not identifier escaping (like `??` with the mysql library) - so this cannot be used with table or column names.
- * @param {string} query The query to escape
- * @param {object} queryParams The parameters for the query
- * @return {string}
- */
-function asyncQueryNamed(query, queryParams) {
-	var newQuery = query.replace(/::([A-Za-z0-9_-]+)/g, function(_, pName) {
-		return db.escape(queryParams[pName]);
-	});
-	return asyncQuery(newQuery);
 }
